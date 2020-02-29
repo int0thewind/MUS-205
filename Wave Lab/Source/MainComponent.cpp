@@ -1,13 +1,83 @@
 //==============================================================================
 
+#include <random>
 #include "MainComponent.h"
 #include "MainApplication.h"
 
-MainComponent::MainComponent()
-: deviceManager (MainApplication::getApp().audioDeviceManager), audioVisualizer(2) {
+MainComponent::MainComponent() :
+waveformId(MainComponent::WaveformId::Empty),
+deviceManager(MainApplication::getApp().audioDeviceManager),
+audioVisualizer(2) {
+    // Set up audioVisualizer
+    this->addAndMakeVisible(this->audioVisualizer);
+
+    // Set up settingsButton
+    this->settingsButton.addListener(this);
+    this->addAndMakeVisible(this->settingsButton);
+
+    // Set up playButton
+    this->playButton.addListener(this);
+    this->drawPlayButton(true);
+    this->playButton.setEnabled(false);
+    this->addAndMakeVisible(this->playButton);
+
+    // Set up levelLabel
+    this->addAndMakeVisible(this->levelLabel);
+
+    // Set up levelSlider
+    this->levelSlider.addListener(this);
+    this->levelSlider.setRange(0.0, 1.0);
+    this->levelSlider.setSliderStyle(Slider::LinearHorizontal);
+    this->levelSlider.setTextBoxStyle(Slider::TextBoxLeft, true,
+            90, 22);
+    this->addAndMakeVisible(levelSlider);
+    this->levelSlider.setEnabled(false);
+
+    // Set up freqLabel
+    this->addAndMakeVisible(this->freqLabel);
+
+    // Set up freqSlider
+    this->freqSlider.addListener(this);
+    this->freqSlider.setRange(0.0, 5000.0);
+    this->freqSlider.setSliderStyle(Slider::LinearHorizontal);
+    this->freqSlider.setTextBoxStyle(Slider::TextBoxLeft, true,
+            90, 22);
+    this->freqSlider.setSkewFactorFromMidPoint(500.0);
+    this->freqSlider.setEnabled(false);
+
+    // Set up waveformLabel
+    this->addAndMakeVisible(this->waveformLabel);
+
+    // Set up waveformMenu
+    this->waveformMenu.addListener(this);
+    this->waveformMenu.addItemList(this->MENU_FIRST_SEC, MainComponent::WaveformId::WhiteNoise);
+    this->waveformMenu.addSeparator();
+    this->waveformMenu.addItemList(this->MENU_SECOND_SEC, MainComponent::WaveformId::SineWave);
+    this->waveformMenu.addSeparator();
+    this->waveformMenu.addItemList(this->MENU_THIRD_SEC, MainComponent::WaveformId::LF_ImpulseWave);
+    this->waveformMenu.addSeparator();
+    this->waveformMenu.addItemList(this->MENU_FOURTH_SEC, MainComponent::WaveformId::BL_ImpulseWave);
+    this->waveformMenu.addSeparator();
+    this->waveformMenu.addItemList(this->MENU_FIFTH_SEC, MainComponent::WaveformId::WT_SineWave);
+    this->waveformMenu.setTextWhenNothingSelected("Waveforms");
+    this->addAndMakeVisible(this->waveformMenu);
+
+    // Set up cpuLabel
+    this->cpuLabel.setJustificationType(Justification::centredRight);
+    this->addAndMakeVisible(this->cpuLabel);
+
+    // Set up cpuUsage
+    this->cpuUsage.setJustificationType(Justification::right);
+    this->addAndMakeVisible(this->cpuUsage);
+
+    // Let our device manager manage our audio source player
+    this->deviceManager.addAudioCallback(&this->audioSourcePlayer);
 }
 
 MainComponent::~MainComponent() {
+    this->audioSourcePlayer.setSource(nullptr);
+    this->deviceManager.removeAudioCallback(&this->audioSourcePlayer);
+    this->deviceManager.closeAudioDevice();
 }
 
 //==============================================================================
@@ -15,24 +85,31 @@ MainComponent::~MainComponent() {
 //==============================================================================
 
 void MainComponent::paint (Graphics& g) {
+    // TODO get fill colour
+    g.fillAll();
 }
 
 void MainComponent::resized() {
+    Rectangle<int> globalBound = this->getLocalBounds();
+    globalBound.removeFromTop(8);
+    globalBound.removeFromLeft(8);
+    globalBound.removeFromRight(8);
+    
 }
 
-void MainComponent::drawPlayButton(juce::DrawableButton& button, bool showPlay) {
-  juce::Path path;
-  if (showPlay) {
-    // draw the triangle
-  }
-  else {
-    // draw the two bars
-  }
-  juce::DrawablePath drawable;
-  drawable.setPath(path);
-  juce::FillType fill (Colours::white);
-  drawable.setFill(fill);
-  button.setImages(&drawable);
+void MainComponent::drawPlayButton(bool showPlay) {
+    juce::Path path;
+    if (showPlay) {
+        path.addTriangle(0,0,0,100,86.6,50);
+    } else {
+        path.addRectangle(0,0,46,100);
+        path.addRectangle(54,0,46,100);
+    }
+    juce::DrawablePath drawable;
+    drawable.setPath(path);
+    juce::FillType fill(Colours::white);
+    drawable.setFill(fill);
+    this->playButton.setImages(&drawable);
 }
 
 //==============================================================================
@@ -40,12 +117,41 @@ void MainComponent::drawPlayButton(juce::DrawableButton& button, bool showPlay) 
 //==============================================================================
 
 void MainComponent::buttonClicked (Button *button) {
+    if (button == &this->playButton) {
+        this->drawPlayButton(this->isPlaying());
+        this->audioSourcePlayer.setSource(this->isPlaying() ? nullptr : this);
+    } else if (button == &this->settingsButton) {
+        this->openAudioSettings();
+    } else {
+        std::cerr << "No button has been selected but a button has been clicked. \n"
+                  << "The address of the button is "
+                  << button
+                  << std::endl;
+    }
 }
 
 void MainComponent::sliderValueChanged (Slider *slider) {
+    if (slider != &this->freqSlider && slider != &this->levelSlider) {
+        std::cerr << "No slider has been selected but a slider has been dragged. \n"
+                  << "The address of the slider is "
+                  << slider
+                  << std::endl;
+    }
 }
 
 void MainComponent::comboBoxChanged (ComboBox *menu) {
+    if (menu == &this->waveformMenu) {
+        this->waveformId = static_cast<WaveformId>(waveformMenu.getSelectedId());
+        this->levelSlider.setEnabled(true);
+        this->freqSlider.setEnabled(!(this->waveformId == MainComponent::WaveformId::WhiteNoise ||
+                                      this->waveformId == MainComponent::WaveformId::BrownNoise));
+        this->playButton.setEnabled(true);
+    } else {
+        std::cerr << "No menu has been selected but a menu has been clicked. \n"
+            << "The address of the menu is "
+            << menu
+            << std::endl;
+    }
 }
 
 //==============================================================================
@@ -53,13 +159,19 @@ void MainComponent::comboBoxChanged (ComboBox *menu) {
 //==============================================================================
 
 void MainComponent::timerCallback() {
+    std::stringstream ss;
+    ss << this->deviceManager.getCpuUsage() << " %" << std::endl;
+    this->cpuUsage.setText(ss.str(), NotificationType::dontSendNotification);
 }
 
 //==============================================================================
 // AudioSource overrides
 //==============================================================================
 
-void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate) {
+void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sr) {
+    this->sampleRate = sr;
+    this->audioVisualizer.setNumChannels(8);
+    this->audioVisualizer.setBufferSize(samplesPerBlockExpected);
 }
 
 void MainComponent::releaseResources() {
@@ -97,41 +209,50 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
 // Audio Utilities
 //==============================================================================
 
-double MainComponent::phasor() {
-  double p = phase;
-  return p;
+double MainComponent::getAndUpdatePhase(double p) {
+    p += this->freqSlider.getValue() / this->sampleRate;
+    return std::fmod(p, 1.0);
 }
 
-float MainComponent::ranSamp() {
-  return 0.0;
-}
-
-float MainComponent::ranSamp(const float mul) {
-  return (ranSamp() * mul);
+float MainComponent::randomGenerater(bool fromZero, float number=1.0) {
+    assert(number >= 0);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(fromZero ? 0 : -number, number);
+    return dis(gen);
 }
 
 float MainComponent::lowPass(const float value, const float prevout, const float alpha) {
-  return 0.0;
+    return 0.0;
 }
 
 bool MainComponent::isPlaying() {
-  return false;
+    return this->audioSourcePlayer.getCurrentSource() != nullptr;
 }
 
 void MainComponent::openAudioSettings() {
+    // TODO how to add audio settings panel?
+    auto audioSettingsPanel = nullptr;
+    juce::DialogWindow::LaunchOptions dialogWindow;
+    dialogWindow.useNativeTitleBar = true;
+    dialogWindow.resizable = false;
+    dialogWindow.dialogTitle = "Audio Settings";
+    dialogWindow.dialogBackgroundColour = Colours::black;
+//    dialogWindow.content.setOwned(audioSettingsPanel.release());
+    dialogWindow.launchAsync();
 }
 
 void MainComponent::createWaveTables() {
-  createSineTable(sineTable);
-  oscillators.push_back(std::make_unique<WavetableOscillator>(sineTable));
-  createImpulseTable(impulseTable);
-  oscillators.push_back(std::make_unique<WavetableOscillator>(impulseTable));
-  createSquareTable(squareTable);
-  oscillators.push_back(std::make_unique<WavetableOscillator>(squareTable));
-  createSawtoothTable(sawtoothTable);
-  oscillators.push_back(std::make_unique<WavetableOscillator>(sawtoothTable));
-  createTriangleTable(triangleTable);
-  oscillators.push_back(std::make_unique<WavetableOscillator>(triangleTable));
+    createSineTable(sineTable);
+    oscillators.push_back(std::make_unique<WavetableOscillator>(sineTable));
+    createImpulseTable(impulseTable);
+    oscillators.push_back(std::make_unique<WavetableOscillator>(impulseTable));
+    createSquareTable(squareTable);
+    oscillators.push_back(std::make_unique<WavetableOscillator>(squareTable));
+    createSawtoothTable(sawtoothTable);
+    oscillators.push_back(std::make_unique<WavetableOscillator>(sawtoothTable));
+    createTriangleTable(triangleTable);
+    oscillators.push_back(std::make_unique<WavetableOscillator>(triangleTable));
 }
 
 //==============================================================================

@@ -8,9 +8,9 @@
 // MainApplication members
 
 MainApplication& MainApplication::getApp() {
-  MainApplication* const app = dynamic_cast<MainApplication*>(JUCEApplication::getInstance());
-  jassert(app != nullptr);
-  return *app;
+    auto* const app = dynamic_cast<MainApplication*>(JUCEApplication::getInstance());
+    assert(app != nullptr);
+    return *app;
 }
 
 void MainApplication::closeAllAlertAndDialogWindows() {
@@ -36,12 +36,12 @@ bool MainApplication::moreThanOneInstanceAllowed() {
 }
 
 void MainApplication::initialise(const String& commandLine) {
-  // initialize the audio device manager
+    // initialize the audio device manager
 
-  // use jassert to ensure audioError is empty
+    // use jassert to ensure audioError is empty
 
-  // Create the application window.
-  mainWindow = std::make_unique<MainWindow>(getApplicationName());
+    // Create the application window.
+    mainWindow = std::make_unique<MainWindow>(getApplicationName());
 }
 
 void MainApplication::shutdown() {

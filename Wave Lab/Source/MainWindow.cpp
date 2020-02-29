@@ -6,8 +6,10 @@
 
 MainWindow::MainWindow(String name)
 : DocumentWindow(name, Colours::white, DocumentWindow::allButtons) {
-  centreWithSize (600, 400);
-  setVisible(true);
+    this->centreWithSize (600, 400);
+    this->setUsingNativeTitleBar(true);
+    this->setResizable(false, false);
+    this->setVisible(true);
 }
 
 //==============================================================================
