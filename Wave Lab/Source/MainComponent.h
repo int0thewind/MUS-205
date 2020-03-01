@@ -69,11 +69,10 @@ public Slider::Listener, public Button::Listener, public ComboBox::Listener, pub
     /// * The level and frequency sliders abut the labels and take the remainder
     ///   of the space on their lines.
     /// * The width of the cpu usage display is 66 pixels, its Y is 24 pixels from the bottom
-    ///   and it is idented from the right by 8 pixels.
+    ///   and it is indented from the right by 8 pixels.
     /// * The cpu label is 36 pixels width and abuts the left side of the usage display.
     /// Look at Wave Lab.app image in the documentation to check your layout:
     /// http://cmp.music.illinois.edu/courses/taube/mus205/Projects/Wave%20Lab/WaveLabOutlines.png
-
     void resized() override;
 
     //==============================================================================
@@ -237,10 +236,10 @@ private:
     ComboBox waveformMenu {"waveformMenu"};
 
     /// A label that displays the text "CPU:"
-    Label cpuLabel {"cpuLabel"};
+    Label cpuLabel {"cpuLabel", "CPU:"};
 
     /// A label that is updated by a timer to show the current cpu usage.
-    Label cpuUsage {"cpuUsage", "CPU: "};
+    Label cpuUsage {"cpuUsage", "0.00 %"};
 
     /**
      * The first section of the combo box waveform menu
@@ -267,6 +266,46 @@ private:
      */
     const StringArray MENU_FIFTH_SEC {"WT Sine", "WT Impulse", "WT Square", "WT Saw", "WT Triangle"};
 
+    /**
+     * Except the playButton and the audioVisualiser, components should have a height of 24 pixels.
+     */
+    const int COMPONENT_HEIGHT = 24;
+
+    /**
+     * Default padding width should be 8
+     */
+    const int PADDING = 8;
+
+    /**
+     * The width of the textbox for levelSlider and freqSlider should be 90
+     */
+    const int SLIDER_TEXTBOX_WIDTH = 90;
+
+    /**
+     * The size of the play button should be 56, which is padding + component_height * 2
+     */
+    const int PLAY_BUTTON_SIZE = PADDING + COMPONENT_HEIGHT * 2;
+
+    /**
+     * The width of the cpuUsage width should be 66
+     */
+    const int CPU_USAGE_WIDTH = 66;
+
+    /**
+     * The width of the cpuLabel width should be 36
+     */
+    const int CPU_LABEL_WIDTH = 36;
+
+    /**
+     * The width of the settingsButton and the waveform menu is 118
+     */
+    const int SETTINGS_BUTTON_WIDTH = 118;
+
+    /**
+     * The width for levelLabel and freqLabel is 72
+     */
+    const int SLIDER_LABEL_WIDTH = 72;
+
     /// The current audio sample rate. Its initial value 0.0
     /// must be updated by prepareToPlay().
     double sampleRate {0.0};
@@ -280,7 +319,7 @@ private:
 
     /// A periodic function ranging 0.0 to 1.0. It returns the current phase
     /// value and post-increments phase by phaseDelta. See: std::fmod().
-    double inline getAndUpdatePhase(double p);
+    double inline getNextPhase(double p);
 
     /// Generates samples in a uniform random distribution.
     void inline whiteNoise(const AudioSourceChannelInfo& bufferToFill) ;
@@ -290,7 +329,8 @@ private:
     void inline dust(const AudioSourceChannelInfo& bufferToFill) ;
 
     /// Generates samples in a 'brown' distribution (-6dB per octave).
-    void inline brownNoise(const AudioSourceChannelInfo& bufferToFill) ;
+    void inline brownNoise(const AudioSourceChannelInfo& bufferToFill);
+
     void inline brownNoiseFilt(const AudioSourceChannelInfo& bufferToFill) ;
 
     /// Generates a sine wave at a specified frequency and amplitude.
@@ -316,13 +356,13 @@ private:
      * @param number the range of the random number
      * @return a random float
      */
-    static float inline randomGenerater(bool fromZero, float number);
+    static float inline randomGenerator(bool fromZero, float number);
 
     /// The change from one filter output to the next is proportional to the
     /// difference between the previous output and the next input.
     /// prevout + (alpha * (value - prevout)
     /// e.g. for i from 1 to n y[i] := y[i-1] + α * (x[i] - y[i-1])
-    float lowPass(const float value, const float prevout, const float alpha) ;
+    static inline float lowPassFilter(float, float, float);
 
     //==============================================================================
     // Wavetable support

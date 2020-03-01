@@ -4,12 +4,17 @@
 #include "MainWindow.h"
 #include "MainComponent.h"
 
-MainWindow::MainWindow(String name)
+MainWindow::MainWindow(const String& name)
 : DocumentWindow(name, Colours::white, DocumentWindow::allButtons) {
-    this->centreWithSize (600, 400);
     this->setUsingNativeTitleBar(true);
-    this->setResizable(false, false);
+    this->setResizable(true, true);
+    this->setResizeLimits(this->MIN_WIDTH, this->MIN_HEIGHT,
+            this->MIN_WIDTH * this->FACTOR, this->MIN_HEIGHT * this->FACTOR);
+    this->centreWithSize (this->MIN_WIDTH, this->MIN_HEIGHT);
     this->setVisible(true);
+    this->mainComponent = std::make_unique<MainComponent>();
+    this->setContentOwned(mainComponent.release(), true);
+//    this->setContentComponentSize(this->MIN_WIDTH, this->MIN_HEIGHT);
 }
 
 //==============================================================================

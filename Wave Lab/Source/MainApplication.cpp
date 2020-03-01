@@ -24,34 +24,34 @@ MainApplication::MainApplication() {
 }
 
 const String MainApplication::getApplicationName() {
-  return ProjectInfo::projectName;
+    return ProjectInfo::projectName;
 }
 
 const String MainApplication::getApplicationVersion() {
-  return ProjectInfo::versionString;
+    return ProjectInfo::versionString;
 }
 
 bool MainApplication::moreThanOneInstanceAllowed() {
-  return false;
+    return false;
 }
 
 void MainApplication::initialise(const String& commandLine) {
     // initialize the audio device manager
-
+    String errorString = this->audioDeviceManager.initialiseWithDefaultDevices(0, 2);
     // use jassert to ensure audioError is empty
-
+    assert(errorString == "");
     // Create the application window.
-    mainWindow = std::make_unique<MainWindow>(getApplicationName());
+    this->mainWindow = std::make_unique<MainWindow>(getApplicationName());
 }
 
 void MainApplication::shutdown() {
-  // Delete our main window
-  mainWindow = nullptr;
+    // Delete our main window
+    this->mainWindow = nullptr;
 }
 
 void MainApplication::systemRequestedQuit() {
-  closeAllAlertAndDialogWindows();
-  quit();
+    this->closeAllAlertAndDialogWindows();
+    this->quit();
 }
 
 void MainApplication::anotherInstanceStarted(const String& commandLine) {

@@ -52,7 +52,7 @@ public:
 
 private:
 
-    /// Closes any open dialog or alert sindows the user left open when they quit
+    /// Closes any open dialog or alert windows the user left open when they quit
     /// the app.  Your method should take the following actions:
     /// * Iterate all the top-level components in juce::Desktop::getInstance()
     /// * Use dynamic_cast to get a pointer any open DialogWindow or AlertWindow.

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "MainComponent.h"
 
 /// This class implements the applicatoin window that contains an
 /// instance of our MainContentComponent class.
@@ -25,7 +26,7 @@ public:
     /// * The window should appear in the center of the screen with its minimum
     ///   width and height.
     /// * Set its visibility to true.
-    MainWindow (String name);
+    explicit MainWindow (const String& name);
 
     //==============================================================================
     // DocumentWindow overrides
@@ -36,5 +37,26 @@ public:
     void closeButtonPressed() override;
 
 private:
+
+    /**
+     * The MainComponent instance that the window holds.
+     */
+    std::unique_ptr<MainComponent> mainComponent;
+
+    /**
+     * The minimum width of the main window
+     */
+    const int MIN_WIDTH = 600;
+
+    /**
+     * The minimum height of the main window
+     */
+    const int MIN_HEIGHT = 400;
+
+    /**
+     * The maximum height and width is 2 times mininum width and height
+     */
+    const int FACTOR = 2;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
 };

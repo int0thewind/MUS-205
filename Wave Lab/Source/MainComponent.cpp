@@ -22,6 +22,7 @@ audioVisualizer(2) {
     this->addAndMakeVisible(this->playButton);
 
     // Set up levelLabel
+    this->levelLabel.setJustificationType(Justification::centredRight);
     this->addAndMakeVisible(this->levelLabel);
 
     // Set up levelSlider
@@ -29,11 +30,12 @@ audioVisualizer(2) {
     this->levelSlider.setRange(0.0, 1.0);
     this->levelSlider.setSliderStyle(Slider::LinearHorizontal);
     this->levelSlider.setTextBoxStyle(Slider::TextBoxLeft, true,
-            90, 22);
+            this->SLIDER_TEXTBOX_WIDTH, this->COMPONENT_HEIGHT);
     this->addAndMakeVisible(levelSlider);
     this->levelSlider.setEnabled(false);
 
     // Set up freqLabel
+    this->freqLabel.setJustificationType(Justification::centredRight);
     this->addAndMakeVisible(this->freqLabel);
 
     // Set up freqSlider
@@ -41,9 +43,10 @@ audioVisualizer(2) {
     this->freqSlider.setRange(0.0, 5000.0);
     this->freqSlider.setSliderStyle(Slider::LinearHorizontal);
     this->freqSlider.setTextBoxStyle(Slider::TextBoxLeft, true,
-            90, 22);
+            this->SLIDER_TEXTBOX_WIDTH, this->COMPONENT_HEIGHT);
     this->freqSlider.setSkewFactorFromMidPoint(500.0);
     this->freqSlider.setEnabled(false);
+    this->addAndMakeVisible(this->freqSlider);
 
     // Set up waveformLabel
     this->addAndMakeVisible(this->waveformLabel);
@@ -85,16 +88,41 @@ MainComponent::~MainComponent() {
 //==============================================================================
 
 void MainComponent::paint (Graphics& g) {
-    // TODO get fill colour
-    g.fillAll();
+    g.fillAll(this->getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 }
 
 void MainComponent::resized() {
     Rectangle<int> globalBound = this->getLocalBounds();
-    globalBound.removeFromTop(8);
-    globalBound.removeFromLeft(8);
-    globalBound.removeFromRight(8);
-    
+    globalBound.removeFromTop(this->PADDING);
+    globalBound.removeFromLeft(this->PADDING);
+    globalBound.removeFromRight(this->PADDING);
+
+    Rectangle<int> upperBound = globalBound.removeFromTop(this->PLAY_BUTTON_SIZE);
+    globalBound.removeFromTop(this->PADDING);
+    Rectangle<int> lowerBound = globalBound;
+
+    Rectangle<int> upperLeftBound = upperBound.removeFromLeft(this->SETTINGS_BUTTON_WIDTH);
+    this->settingsButton.setBounds(upperLeftBound.removeFromTop(this->COMPONENT_HEIGHT));
+    upperLeftBound.removeFromTop(this->PADDING);
+    this->waveformMenu.setBounds(upperLeftBound);
+
+    upperBound.removeFromLeft(this->PADDING);
+    this->playButton.setBounds(upperBound.removeFromLeft(this->PLAY_BUTTON_SIZE));
+
+    upperBound.removeFromLeft(this->PADDING);
+    Rectangle<int> upperLabelBound = upperBound.removeFromLeft(this->SLIDER_LABEL_WIDTH);
+    this->levelLabel.setBounds(upperLabelBound.removeFromTop(this->COMPONENT_HEIGHT));
+    upperLabelBound.removeFromTop(this->PADDING);
+    this->freqLabel.setBounds(upperLabelBound);
+
+    this->levelSlider.setBounds(upperBound.removeFromTop(this->COMPONENT_HEIGHT));
+    upperBound.removeFromTop(this->PADDING);
+    this->freqSlider.setBounds(upperBound);
+
+    Rectangle<int> cpuBound = lowerBound.removeFromBottom(this->COMPONENT_HEIGHT);
+    this->audioVisualizer.setBounds(lowerBound);
+    this->cpuUsage.setBounds(cpuBound.removeFromRight(this->CPU_USAGE_WIDTH));
+    this->cpuLabel.setBounds(cpuBound.removeFromRight(this->CPU_LABEL_WIDTH));
 }
 
 void MainComponent::drawPlayButton(bool showPlay) {
@@ -169,52 +197,49 @@ void MainComponent::timerCallback() {
 //==============================================================================
 
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sr) {
+    this->phase = 0.0;
     this->sampleRate = sr;
-    this->audioVisualizer.setNumChannels(8);
     this->audioVisualizer.setBufferSize(samplesPerBlockExpected);
+    this->audioVisualizer.setSamplesPerBlock(8);
 }
 
 void MainComponent::releaseResources() {
 }
 
 void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill) {
-  bufferToFill.clearActiveBufferRegion();
-  switch (waveformId) {
-    case WhiteNoise:      whiteNoise(bufferToFill);   break;
-    case DustNoise:       dust(bufferToFill);         break;
-    case BrownNoise:      brownNoise(bufferToFill);   break;
-    case SineWave:        sineWave(bufferToFill);     break;
-    case LF_ImpulseWave:  LF_impulseWave(bufferToFill);  break;
-    case LF_SquareWave:   LF_squareWave(bufferToFill);   break;
-    case LF_SawtoothWave: LF_sawtoothWave(bufferToFill); break;
-    case LF_TriangeWave:  LF_triangleWave(bufferToFill); break;
-    case BL_ImpulseWave:  BL_impulseWave(bufferToFill);  break;
-    case BL_SquareWave:   BL_squareWave(bufferToFill);   break;
-    case BL_SawtoothWave: BL_sawtoothWave(bufferToFill); break;
-    case BL_TriangeWave:  BL_triangleWave(bufferToFill); break;
-    case WT_SineWave:
-    case WT_ImpulseWave:
-    case WT_SquareWave:
-    case WT_SawtoothWave:
-    case WT_TriangleWave:
-      WT_wave(bufferToFill);
-      break;
-    case Empty:
-      break;
-  }
-  audioVisualizer.pushBuffer(bufferToFill);
+    bufferToFill.clearActiveBufferRegion();
+    switch (this->waveformId) {
+        case WhiteNoise:      whiteNoise(bufferToFill);      break;
+        case DustNoise:       dust(bufferToFill);            break;
+        case BrownNoise:      brownNoise(bufferToFill);      break;
+        case SineWave:        sineWave(bufferToFill);        break;
+        case LF_ImpulseWave:  LF_impulseWave(bufferToFill);  break;
+        case LF_SquareWave:   LF_squareWave(bufferToFill);   break;
+        case LF_SawtoothWave: LF_sawtoothWave(bufferToFill); break;
+        case LF_TriangeWave:  LF_triangleWave(bufferToFill); break;
+        case BL_ImpulseWave:  BL_impulseWave(bufferToFill);  break;
+        case BL_SquareWave:   BL_squareWave(bufferToFill);   break;
+        case BL_SawtoothWave: BL_sawtoothWave(bufferToFill); break;
+        case BL_TriangeWave:  BL_triangleWave(bufferToFill); break;
+        case WT_SineWave:
+        case WT_ImpulseWave:
+        case WT_SquareWave:
+        case WT_SawtoothWave:
+        case WT_TriangleWave: WT_wave(bufferToFill); break;
+        case Empty: break;
+    }
+    audioVisualizer.pushBuffer(bufferToFill);
 }
 
 //==============================================================================
 // Audio Utilities
 //==============================================================================
 
-double MainComponent::getAndUpdatePhase(double p) {
-    p += this->freqSlider.getValue() / this->sampleRate;
-    return std::fmod(p, 1.0);
+double MainComponent::getNextPhase(double p) {
+    return std::fmod(p + this->freqSlider.getValue() / this->sampleRate, 1.0);
 }
 
-float MainComponent::randomGenerater(bool fromZero, float number=1.0) {
+float MainComponent::randomGenerator(bool fromZero, float number=1.0) {
     assert(number >= 0);
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -222,8 +247,8 @@ float MainComponent::randomGenerater(bool fromZero, float number=1.0) {
     return dis(gen);
 }
 
-float MainComponent::lowPass(const float value, const float prevout, const float alpha) {
-    return 0.0;
+float MainComponent::lowPassFilter(float value, float previousOutput, float alpha) {
+    return previousOutput + (alpha * (value - previousOutput));
 }
 
 bool MainComponent::isPlaying() {
@@ -231,14 +256,19 @@ bool MainComponent::isPlaying() {
 }
 
 void MainComponent::openAudioSettings() {
-    // TODO how to add audio settings panel?
-    auto audioSettingsPanel = nullptr;
+    std::unique_ptr<juce::AudioDeviceSelectorComponent> audioSettingsPanel =
+            std::make_unique<juce::AudioDeviceSelectorComponent>(this->deviceManager,
+                    0, 2, 0, 2,
+                    true, false,
+                    true, false);
+    audioSettingsPanel->setSize(500, 270);
     juce::DialogWindow::LaunchOptions dialogWindow;
+    // TODO what is the size of the dialog window?
     dialogWindow.useNativeTitleBar = true;
     dialogWindow.resizable = false;
     dialogWindow.dialogTitle = "Audio Settings";
     dialogWindow.dialogBackgroundColour = Colours::black;
-//    dialogWindow.content.setOwned(audioSettingsPanel.release());
+    dialogWindow.content.setOwned(audioSettingsPanel.release());
     dialogWindow.launchAsync();
 }
 
@@ -262,16 +292,40 @@ void MainComponent::createWaveTables() {
 // White Noise
 
 void MainComponent::whiteNoise (const AudioSourceChannelInfo& bufferToFill) {
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        for (int i = 0; i < bufferToFill.numSamples; ++i) {
+            channelData[i] = MainComponent::randomGenerator(false, (float) this->levelSlider.getValue());
+        }
+    }
 }
 
 // Dust
 
 void MainComponent::dust (const AudioSourceChannelInfo& bufferToFill) {
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        for (int i = 0; i < bufferToFill.numSamples; ++i) {
+            double probability = this->freqSlider.getValue() / this->sampleRate;
+            if (MainComponent::randomGenerator(false, 1.0) <= probability) {
+                channelData[i] = (float) this->levelSlider.getValue();
+            }
+        }
+    }
 }
 
 // Brown Noise
 
 void MainComponent::brownNoise (const AudioSourceChannelInfo& bufferToFill) {
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        channelData[0] = MainComponent::randomGenerator(false, (float) this->levelSlider.getValue());
+        for (int i = 1; i < bufferToFill.numSamples; ++i) {
+            channelData[i] = MainComponent::lowPassFilter(channelData[i - 1],
+                MainComponent::randomGenerator(false,(float) this->levelSlider.getValue()),
+                (float) this->levelSlider.getValue());
+        }
+    }
 }
 
 //==============================================================================
@@ -279,6 +333,12 @@ void MainComponent::brownNoise (const AudioSourceChannelInfo& bufferToFill) {
 //==============================================================================
 
 void MainComponent::sineWave (const AudioSourceChannelInfo& bufferToFill) {
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        for (int i = 0; i < bufferToFill.numSamples; ++i) {
+            channelData[i] = MainComponent::randomGenerator(false, (float) this->levelSlider.getValue());
+        }
+    }
 }
 
 //==============================================================================
