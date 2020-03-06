@@ -24,4 +24,3 @@ void MainWindow::closeButtonPressed() {
   // when the main window is closed signal the app to exit
   JUCEApplication::getInstance()->systemRequestedQuit();
 }
-
