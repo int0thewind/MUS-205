@@ -101,17 +101,8 @@ namespace BinaryData
     extern const char*   G800A112Piano1d23f_sfz;
     const int            G800A112Piano1d23f_sfzSize = 3499;
 
-    extern const char*   juce_module_info;
-    const int            juce_module_infoSize = 642;
-
-    extern const char*   LICENSE;
-    const int            LICENSESize = 1152;
-
-    extern const char*   README_md;
-    const int            README_mdSize = 1922;
-
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 34;
+    const int namedResourceListSize = 31;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

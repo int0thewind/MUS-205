@@ -116,7 +116,7 @@ void sfzero::SFZeroAudioProcessor::setStateInformation(const void *data, int siz
 
 sfzero::Sound *sfzero::SFZeroAudioProcessor::getSound()
 {
-  juce::SynthesiserSound *sound = synth.getSound(0);
+  juce::SynthesiserSound *sound = synth.getSound(0).get();
 
   return dynamic_cast<sfzero::Sound *>(sound);
 }
