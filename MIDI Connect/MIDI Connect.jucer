@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="mXOwuW" name="MIDI Connect" projectType="guiapp" jucerVersion="5.4.7">
+  <MAINGROUP id="eqPyKY" name="MIDI Connect">
+    <GROUP id="{08187EF4-B8BB-51A0-67D5-BBFFE59B7EDC}" name="Resource">
+      <GROUP id="{C1FDF27F-4AA8-44D8-3E23-F486BEFE49C6}" name="A112-Piano1d-2">
+        <FILE id="WafEvn" name="3f-021-A0.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-021-A0.wav"/>
+        <FILE id="VqoGiA" name="3f-024-C1.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-024-C1.wav"/>
+        <FILE id="qWXi04" name="3f-027-D#1.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-027-D#1.wav"/>
+        <FILE id="PQRv8Y" name="3f-030-F#1.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-030-F#1.wav"/>
+        <FILE id="cnYO7g" name="3f-033-A1.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-033-A1.wav"/>
+        <FILE id="KjJPlh" name="3f-036-C2.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-036-C2.wav"/>
+        <FILE id="HKXacj" name="3f-039-D#2.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-039-D#2.wav"/>
+        <FILE id="i6pSFD" name="3f-042-F#2.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-042-F#2.wav"/>
+        <FILE id="VCTWUw" name="3f-045-A2.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-045-A2.wav"/>
+        <FILE id="CeXTts" name="3f-048-C3.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-048-C3.wav"/>
+        <FILE id="lC5Ps6" name="3f-051-D#3.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-051-D#3.wav"/>
+        <FILE id="zWUKXo" name="3f-054-F#3.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-054-F#3.wav"/>
+        <FILE id="z3ERpq" name="3f-057-A3.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-057-A3.wav"/>
+        <FILE id="dgDNFw" name="3f-060-C4.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-060-C4.wav"/>
+        <FILE id="LkboWa" name="3f-063-D#4.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-063-D#4.wav"/>
+        <FILE id="s2SWdn" name="3f-066-F#4.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-066-F#4.wav"/>
+        <FILE id="jnEL4X" name="3f-069-A4.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-069-A4.wav"/>
+        <FILE id="SX06P6" name="3f-072-C5.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-072-C5.wav"/>
+        <FILE id="tZOCKw" name="3f-075-D#5.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-075-D#5.wav"/>
+        <FILE id="PSFqg8" name="3f-078-F#5.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-078-F#5.wav"/>
+        <FILE id="bw5HQU" name="3f-081-A5.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-081-A5.wav"/>
+        <FILE id="XCQDcs" name="3f-084-C6.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-084-C6.wav"/>
+        <FILE id="Jq69LS" name="3f-087-D#6.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-087-D#6.wav"/>
+        <FILE id="KQpWbB" name="3f-090-F#6.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-090-F#6.wav"/>
+        <FILE id="WCKFNx" name="3f-093-A6.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-093-A6.wav"/>
+        <FILE id="o7IsNk" name="3f-096-C7.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-096-C7.wav"/>
+        <FILE id="riBjGb" name="3f-099-D#7.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-099-D#7.wav"/>
+        <FILE id="ROkzSz" name="3f-102-F#7.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-102-F#7.wav"/>
+        <FILE id="ibdC7y" name="3f-105-A7.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-105-A7.wav"/>
+        <FILE id="fvXMQp" name="3f-108-C8.wav" compile="0" resource="1" file="Resources/A112-Piano1d-2/3f-108-C8.wav"/>
+        <FILE id="xQd4Km" name="G800-A112-Piano1d-2-3f.sfz" compile="0" resource="1"
+              file="Resources/A112-Piano1d-2/G800-A112-Piano1d-2-3f.sfz"/>
+      </GROUP>
+    </GROUP>
+    <GROUP id="{E3437673-059A-188B-F08C-8C1C3CE22F78}" name="Source">
+      <GROUP id="{AEC844BD-0C2B-14C9-B769-1A7441A0488F}" name="SFZero">
+        <GROUP id="{98CAE207-5703-D96D-610D-90BCF041E097}" name="sfzero">
+          <GROUP id="{5DF29905-F2BB-10F6-0313-FD8FB1C3230F}" name="sf2-chunks">
+            <FILE id="XXNQ4S" name="generators.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/generators.h"/>
+            <FILE id="NfoAUN" name="ibag.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/ibag.h"/>
+            <FILE id="obE34J" name="igen.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/igen.h"/>
+            <FILE id="nVTqzD" name="imod.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/imod.h"/>
+            <FILE id="sTN2Oi" name="inst.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/inst.h"/>
+            <FILE id="rfcjik" name="iver.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/iver.h"/>
+            <FILE id="nNKhJp" name="pbag.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/pbag.h"/>
+            <FILE id="D1ndgq" name="pgen.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/pgen.h"/>
+            <FILE id="TDe0QG" name="phdr.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/phdr.h"/>
+            <FILE id="CAsaVE" name="pmod.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/pmod.h"/>
+            <FILE id="drxke4" name="shdr.h" compile="0" resource="0" file="Source/SFZero/sfzero/sf2-chunks/shdr.h"/>
+          </GROUP>
+          <FILE id="MtLMCb" name="RIFF.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/RIFF.cpp"/>
+          <FILE id="wg7LRc" name="RIFF.h" compile="0" resource="0" file="Source/SFZero/sfzero/RIFF.h"/>
+          <FILE id="TH0cW0" name="SF2.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SF2.cpp"/>
+          <FILE id="KNMe9L" name="SF2.h" compile="0" resource="0" file="Source/SFZero/sfzero/SF2.h"/>
+          <FILE id="edaJf1" name="SF2Generator.cpp" compile="1" resource="0"
+                file="Source/SFZero/sfzero/SF2Generator.cpp"/>
+          <FILE id="yJnps8" name="SF2Generator.h" compile="0" resource="0" file="Source/SFZero/sfzero/SF2Generator.h"/>
+          <FILE id="B66aNu" name="SF2Reader.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SF2Reader.cpp"/>
+          <FILE id="P2HvhK" name="SF2Reader.h" compile="0" resource="0" file="Source/SFZero/sfzero/SF2Reader.h"/>
+          <FILE id="gCBsIC" name="SF2Sound.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SF2Sound.cpp"/>
+          <FILE id="I7H55P" name="SF2Sound.h" compile="0" resource="0" file="Source/SFZero/sfzero/SF2Sound.h"/>
+          <FILE id="sbjIzV" name="SF2WinTypes.h" compile="0" resource="0" file="Source/SFZero/sfzero/SF2WinTypes.h"/>
+          <FILE id="b1AsYq" name="SFZCommon.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZCommon.h"/>
+          <FILE id="fwZjh2" name="SFZDebug.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZDebug.cpp"/>
+          <FILE id="by5xu4" name="SFZDebug.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZDebug.h"/>
+          <FILE id="opT2pn" name="SFZEG.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZEG.cpp"/>
+          <FILE id="jXY2OQ" name="SFZEG.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZEG.h"/>
+          <FILE id="cInjru" name="SFZReader.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZReader.cpp"/>
+          <FILE id="Ln0Eeg" name="SFZReader.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZReader.h"/>
+          <FILE id="zgwL33" name="SFZRegion.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZRegion.cpp"/>
+          <FILE id="EiaDNU" name="SFZRegion.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZRegion.h"/>
+          <FILE id="cvlf7n" name="SFZSample.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZSample.cpp"/>
+          <FILE id="O0vo0P" name="SFZSample.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZSample.h"/>
+          <FILE id="B8Nmyz" name="SFZSound.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZSound.cpp"/>
+          <FILE id="xRT6om" name="SFZSound.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZSound.h"/>
+          <FILE id="PXOiBg" name="SFZSynth.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZSynth.cpp"/>
+          <FILE id="TU4KcJ" name="SFZSynth.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZSynth.h"/>
+          <FILE id="uqC44J" name="SFZVoice.cpp" compile="1" resource="0" file="Source/SFZero/sfzero/SFZVoice.cpp"/>
+          <FILE id="fX8HEC" name="SFZVoice.h" compile="0" resource="0" file="Source/SFZero/sfzero/SFZVoice.h"/>
+        </GROUP>
+        <FILE id="LvAnI4" name="juce_module_info" compile="0" resource="1"
+              file="Source/SFZero/juce_module_info"/>
+        <FILE id="GdfC77" name="LICENSE" compile="0" resource="1" file="Source/SFZero/LICENSE"/>
+        <FILE id="DLqE3e" name="README.md" compile="0" resource="1" file="Source/SFZero/README.md"/>
+        <FILE id="X3KLr8" name="SFZero.cpp" compile="1" resource="0" file="Source/SFZero/SFZero.cpp"/>
+        <FILE id="yUCMIC" name="SFZero.h" compile="0" resource="0" file="Source/SFZero/SFZero.h"/>
+      </GROUP>
+      <FILE id="HgePra" name="MainApplication.cpp" compile="1" resource="0"
+            file="Source/MainApplication.cpp"/>
+      <FILE id="YrNdbV" name="MainApplication.h" compile="0" resource="0"
+            file="Source/MainApplication.h"/>
+      <FILE id="lSDuw8" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="iGGXrv" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="tPSqLk" name="MainWindow.cpp" compile="1" resource="0" file="Source/MainWindow.cpp"/>
+      <FILE id="Qy6DpO" name="MainWindow.h" compile="0" resource="0" file="Source/MainWindow.h"/>
+      <FILE id="uGG6fy" name="MidiMessageLog.cpp" compile="1" resource="0"
+            file="Source/MidiMessageLog.cpp"/>
+      <FILE id="yYqfgX" name="MidiMessageLog.h" compile="0" resource="0"
+            file="Source/MidiMessageLog.h"/>
+      <FILE id="L62Iay" name="MidiPianoRoll.cpp" compile="1" resource="0"
+            file="Source/MidiPianoRoll.cpp"/>
+      <FILE id="tByTMI" name="MidiPianoRoll.h" compile="0" resource="0" file="Source/MidiPianoRoll.h"/>
+      <FILE id="B2o9kE" name="SFZeroAudioProcessor.cpp" compile="1" resource="0"
+            file="Source/SFZeroAudioProcessor.cpp"/>
+      <FILE id="j3U4mp" name="SFZeroAudioProcessor.h" compile="0" resource="0"
+            file="Source/SFZeroAudioProcessor.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+    <CLION targetFolder="Builds/CLion">
+      <MODULEPATHS>
+        <MODULEPATH id="juce_opengl"/>
+        <MODULEPATH id="juce_gui_extra"/>
+        <MODULEPATH id="juce_gui_basics"/>
+        <MODULEPATH id="juce_graphics"/>
+        <MODULEPATH id="juce_events"/>
+        <MODULEPATH id="juce_data_structures"/>
+        <MODULEPATH id="juce_cryptography"/>
+        <MODULEPATH id="juce_core"/>
+        <MODULEPATH id="juce_audio_processors"/>
+        <MODULEPATH id="juce_audio_formats"/>
+        <MODULEPATH id="juce_audio_devices"/>
+        <MODULEPATH id="juce_audio_basics"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </CLION>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+</JUCERPROJECT>
