@@ -131,8 +131,8 @@ void MainComponent::drawPlayButton(bool showPlay) {
     if (showPlay) {
         path.addTriangle(0,0,0,100,86.6,50);
     } else {
-        path.addRectangle(0,0,46,100);
-        path.addRectangle(54,0,46,100);
+        path.addRectangle(0,0,42,100);
+        path.addRectangle(58,0,42,100);
     }
     juce::DrawablePath drawable;
     drawable.setPath(path);
@@ -199,12 +199,13 @@ void MainComponent::timerCallback() {
 // AudioSource overrides
 //==============================================================================
 
-void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sr) {
+void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sr) {
     this->phase = 0.0;
     this->sampleRate = sr;
-    this->nyquistFrequency = sr / 2;
     this->audioVisualizer.setBufferSize(samplesPerBlockExpected);
     this->audioVisualizer.setSamplesPerBlock(8);
+    this->phaseDelta = this->freqSlider.getValue() / this->sampleRate;
+    this->tableSize = samplesPerBlockExpected;
 }
 
 void MainComponent::releaseResources() {
@@ -218,14 +219,14 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
         case DustNoise:       dust(bufferToFill);            break;
         case BrownNoise:      brownNoise(bufferToFill);      break;
         case SineWave:        sineWave(bufferToFill);        break;
-        case LF_ImpulseWave:  LF_impulseWave(bufferToFill);  break;
-        case LF_SquareWave:   LF_squareWave(bufferToFill);   break;
-        case LF_SawtoothWave: LF_sawtoothWave(bufferToFill); break;
-        case LF_TriangeWave:  LF_triangleWave(bufferToFill); break;
-        case BL_ImpulseWave:  BL_impulseWave(bufferToFill);  break;
-        case BL_SquareWave:   BL_squareWave(bufferToFill);   break;
-        case BL_SawtoothWave: BL_sawtoothWave(bufferToFill); break;
-        case BL_TriangeWave:  BL_triangleWave(bufferToFill); break;
+        case LF_ImpulseWave:
+        case LF_SquareWave:
+        case LF_SawtoothWave:
+        case LF_TriangeWave: WaveGenerator(bufferToFill); break;
+        case BL_ImpulseWave:
+        case BL_SquareWave:
+        case BL_SawtoothWave:
+        case BL_TriangeWave:  BL_WaveGenerator(bufferToFill); break;
         case WT_SineWave:
         case WT_ImpulseWave:
         case WT_SquareWave:
@@ -240,15 +241,10 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
 // Audio Utilities
 //==============================================================================
 
-double MainComponent::getNextPhase() {
+double MainComponent::getNextPhaseAndUpdate() {
+    double prevPhase = this->phase;
     this->phase = std::fmod(this->phase + this->phaseDelta, 1.0);
-    return this->phase;
-}
-
-bool MainComponent::isNextPhaseToZero() {
-    double previousPhase = this->phase;
-    this->phase = std::fmod(this->phase + this->phaseDelta, 1.0);
-    return previousPhase > this->phase;
+    return prevPhase;
 }
 
 float MainComponent::randomGenerator(bool fromZero, float number) {
@@ -257,19 +253,6 @@ float MainComponent::randomGenerator(bool fromZero, float number) {
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(fromZero ? 0 : -number, number);
     return dis(gen);
-}
-
-int MainComponent::getHarmonicsNumber(float nyquistFrequency, float baseFrequency) {
-    if (baseFrequency == 0 || nyquistFrequency == 0) {
-        return 1;
-    }
-    float frequency = baseFrequency;
-    int numberOfHarmonics = 1;
-    while (frequency < nyquistFrequency) {
-        frequency += frequency;
-        numberOfHarmonics ++;
-    }
-    return numberOfHarmonics;
 }
 
 float MainComponent::lowPassFilter(float value, float previousOutput, float alpha) {
@@ -313,7 +296,7 @@ void MainComponent::createWaveTables() {
 // Noise
 //==============================================================================
 
-void MainComponent::whiteNoise (const AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::whiteNoise(const AudioSourceChannelInfo& bufferToFill) {
     for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
         for (int i = 0; i < bufferToFill.numSamples; ++i) {
@@ -322,7 +305,7 @@ void MainComponent::whiteNoise (const AudioSourceChannelInfo& bufferToFill) {
     }
 }
 
-void MainComponent::dust (const AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::dust(const AudioSourceChannelInfo& bufferToFill) {
     for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
         for (int i = 0; i < bufferToFill.numSamples; ++i) {
@@ -334,7 +317,7 @@ void MainComponent::dust (const AudioSourceChannelInfo& bufferToFill) {
     }
 }
 
-void MainComponent::brownNoise (const AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::brownNoise(const AudioSourceChannelInfo& bufferToFill) {
     for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
         channelData[0] = MainComponent::randomGenerator(false, (float) this->levelSlider.getValue());
@@ -350,10 +333,10 @@ void MainComponent::brownNoise (const AudioSourceChannelInfo& bufferToFill) {
 // Sine Wave
 //==============================================================================
 
-void MainComponent::sineWave (const AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::sineWave(const AudioSourceChannelInfo& bufferToFill) {
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        firstChannelData[i] = (float) (std::sin(2 * M_PI * this->getNextPhase()) * this->levelSlider.getValue());
+        firstChannelData[i] = (float) (std::sin(2 * M_PI * this->getNextPhaseAndUpdate()) * this->levelSlider.getValue());
     }
     for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
@@ -367,12 +350,19 @@ void MainComponent::sineWave (const AudioSourceChannelInfo& bufferToFill) {
 // Low Frequency Waveforms
 //==============================================================================
 
-/// Impulse wave
-
-void MainComponent::LF_impulseWave (const AudioSourceChannelInfo& bufferToFill) {
+void MainComponent::WaveGenerator(const AudioSourceChannelInfo &bufferToFill) {
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        firstChannelData[i] = (float) (this->isNextPhaseToZero() ? this->levelSlider.getValue() : 0.0);
+        switch (this->waveformId) {
+            case LF_ImpulseWave: firstChannelData[i] = this->LF_impulseWave(); break;
+            case LF_SquareWave: firstChannelData[i] = this->LF_squareWave(); break;
+            case LF_SawtoothWave: firstChannelData[i] = this->LF_sawtoothWave(); break;
+            case LF_TriangeWave: firstChannelData[i] = this->LF_triangleWave(); break;
+            default:
+                std::cerr << "Error! Wrong function call! \n"
+                          << "Other function instead of low frequency waves called the function"
+                          << std::endl;
+        }
     }
     for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
@@ -382,104 +372,67 @@ void MainComponent::LF_impulseWave (const AudioSourceChannelInfo& bufferToFill) 
     }
 }
 
-/// Square wave
-
-void MainComponent::LF_squareWave (const AudioSourceChannelInfo& bufferToFill) {
-    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        auto level = (float) this->levelSlider.getValue();
-        firstChannelData[i] = this->getNextPhase() <= 0.5 ? -level : level;
-    }
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
+float MainComponent::LF_impulseWave() {
+    double currentPhase = this->getNextPhaseAndUpdate();
+    double nextPhase = this->phase;
+    auto level =  (float) this->levelSlider.getValue();
+    return currentPhase >= nextPhase ? (float) level : 0.0;
 }
 
-/// Sawtooth wave
+float MainComponent::LF_squareWave() {
+    auto level = (float) this->levelSlider.getValue();
+    return this->getNextPhaseAndUpdate() <= 0.5 ? -level : level;
+}
 
-void MainComponent::LF_sawtoothWave (const AudioSourceChannelInfo& bufferToFill) {
-    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        firstChannelData[i] = (float) ((this->getNextPhase() * 2 - 1) * this->levelSlider.getValue());
-    }
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
+float MainComponent::LF_sawtoothWave() {
+    return (float) ((this->getNextPhaseAndUpdate() * 2 - 1) * this->levelSlider.getValue());
+
 }
 
 /// Triangle wave
 
-void MainComponent::LF_triangleWave (const AudioSourceChannelInfo& bufferToFill) {
-    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        double p = this->getNextPhase();
-        firstChannelData[i] = (float) ((p <= 0.5 ? 4 * p - 1 : 3 - 4 * p) * this->levelSlider.getValue());
-    }
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
+float MainComponent::LF_triangleWave() {
+    double p = this->getNextPhaseAndUpdate();
+    return (float) ((p <= 0.5 ? 4 * p - 1 : 3 - 4 * p) * this->levelSlider.getValue());
 }
 
 //==============================================================================
 // Band Limited Waveforms
 //==============================================================================
 
-/// Impulse (pulse) wave
-
-/// Synthesized by summing sin() over frequency and all its harmonics at equal
-/// amplitude. To make it band limited only include harmonics that are at or
-/// below the nyquist limit.
-void MainComponent::BL_impulseWave (const AudioSourceChannelInfo& bufferToFill) {
-//    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-//    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-//        firstChannelData[i] = (float) ((this->isNextPhaseToZero() ? 1 : 0) * this->levelSlider.getValue());
-//    }
-//    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-//        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-//        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-//            channelData[i] = firstChannelData[i];
-//        }
-//    }
-}
-
-/// Square wave
-
-/// Synthesized by summing sin() over all ODD harmonics at 1/harmonic amplitude.
-/// To make it band limited only include harmonics that are at or below the
-/// nyquist limit.
-void MainComponent::BL_squareWave (const AudioSourceChannelInfo& bufferToFill) {
-    int harmonicsNumber = MainComponent::getHarmonicsNumber(
-            (float) this->nyquistFrequency, (float) this->freqSlider.getValue());
-
+void inline MainComponent::BL_WaveGenerator(const AudioSourceChannelInfo &bufferToFill) {
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    const double initialPhase = this->phase;
+    const auto initialPhase = this->phase;
     for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        auto level = (float) this->levelSlider.getValue();
-        firstChannelData[i] = this->getNextPhase() <= 0.5 ? -level : level;
-    }
-    const double afterPhase = this->phase;
-    for (int harmonicOrder = 1; harmonicOrder <= harmonicsNumber; ++harmonicOrder) {
-        if (harmonicOrder % 2 == 1) {
-            this->phase = initialPhase;
-            for (int j = 0; j < bufferToFill.numSamples; ++j) {
-                for (unsigned k = 0; k < harmonicOrder - 1; ++k) {
-                    this->getNextPhase();
-                }
-                firstChannelData[j] += (float) (std::sin(TWO_PI * this->getNextPhase()) *
-                        (1.0 / (double) harmonicOrder) * this->levelSlider.getValue());
-            }
+        switch (this->waveformId) {
+            // Call the same Low Frequency waves as the base wave generator
+            case BL_ImpulseWave: firstChannelData[i] = this->LF_impulseWave(); break;
+            case BL_SquareWave: firstChannelData[i] = this->LF_squareWave(); break;
+            case BL_SawtoothWave: firstChannelData[i] = this->LF_sawtoothWave(); break;
+            case BL_TriangeWave: firstChannelData[i] = this->LF_triangleWave(); break;
+            default:
+                std::cerr << "Error! Wrong function call! \n"
+                          << "Other function instead of band limited waves called the function"
+                          << std::endl;
         }
     }
-    this->phase = afterPhase;
+    const double baseFrequency = this->freqSlider.getValue();
+    const double level = this->levelSlider.getValue();
+    switch (this->waveformId) {
+        // Call the same Low Frequency waves as the base wave generator
+        case BL_ImpulseWave: this->BL_sineWaveAdder(bufferToFill,
+                false, 0, initialPhase, baseFrequency, level); break;
+        case BL_SquareWave: this->BL_sineWaveAdder(bufferToFill,
+                true, 1, initialPhase, baseFrequency, level); break;
+        case BL_SawtoothWave: this->BL_sineWaveAdder(bufferToFill,
+                false, 1, initialPhase, baseFrequency, level); break;
+        case BL_TriangeWave: this->BL_sineWaveAdder(bufferToFill,
+                true, 2, initialPhase, baseFrequency, level); break;
+        default:
+            std::cerr << "Error! Wrong function call! \n"
+                      << "Other function instead of band limited waves called the function"
+                      << std::endl;
+    }
 
     for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
@@ -489,74 +442,66 @@ void MainComponent::BL_squareWave (const AudioSourceChannelInfo& bufferToFill) {
     }
 }
 
-/// Sawtooth wave
-///
-/// Synthesized by summing sin() over all harmonics at 1/harmonic amplitude. To make
-/// it band limited only include harmonics that are at or below the nyquist limit.
-void MainComponent::BL_sawtoothWave (const AudioSourceChannelInfo& bufferToFill) {
-    int totalHarmonics = MainComponent::getHarmonicsNumber(
-            (float) this->nyquistFrequency, (float) this->freqSlider.getValue());
+void MainComponent::BL_sineWaveAdder(const AudioSourceChannelInfo &bufferToFill,
+        const bool oddHarmonics, const int amplitude,
+        const double initialPhase, const double baseFrequency, const double level) {
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    const double initialPhase = this->phase;
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        firstChannelData[i] = (float) ((this->getNextPhase() * 2 - 1) * this->levelSlider.getValue());
-    }
-    const double afterPhase = this->phase;
-    for (int harmonicOrder = 1; harmonicOrder <= totalHarmonics; ++harmonicOrder) {
-        this->phase = initialPhase;
-        for (int j = 0; j < bufferToFill.numSamples; ++j) {
-            for (unsigned k = 0; k < harmonicOrder - 1; ++k) {
-                this->getNextPhase();
+    int totalHarmonics = this->sampleRate / baseFrequency / 2;
+
+    for (int h = 1; h < totalHarmonics; ++h) {
+        if (oddHarmonics && h % 2 == 0) {
+            continue;
+        } else {
+            double p = initialPhase;
+
+            double amp = level;
+            if (amplitude == 0) amp = amp;
+            else if (amplitude == 1) amp /= h;
+            else if (amplitude == 2) amp /= std::pow(h, 2);
+
+            for (int i = 0; i < bufferToFill.numSamples; ++i) {
+                firstChannelData[i] += (float) (std::sin(TWO_PI * p * h) * amp);
+                p += this->phaseDelta;
             }
-            firstChannelData[j] += (float) (std::sin(TWO_PI * this->getNextPhase()) *
-                                            (1.0 / (double)harmonicOrder) * this->levelSlider.getValue());
         }
     }
-    this->phase = afterPhase;
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
+
 }
 
-/// Triangle wave
-///
-/// Synthesized by summing sin() over all ODD harmonics at 1/harmonic**2 amplitude.
-/// To make it band limited only include harmonics that are at or below the
-/// Nyquist limit.
-void MainComponent::BL_triangleWave (const AudioSourceChannelInfo& bufferToFill) {
-    int totalHarmonics = MainComponent::getHarmonicsNumber(
-            (float) this->nyquistFrequency, (float) this->freqSlider.getValue());
-    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    const double initialPhase = this->phase;
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        double p = this->getNextPhase();
-        firstChannelData[i] = (float) ((p <= 0.5 ? 4 * p - 1 : 3 - 4 * p) * this->levelSlider.getValue());
-    }
-    const double afterPhase = this->phase;
-    for (int harmonicOrder = 1; harmonicOrder <= totalHarmonics; ++harmonicOrder) {
-        if (harmonicOrder % 2 == 1) {
-            this->phase = initialPhase;
-            for (int j = 0; j < bufferToFill.numSamples; ++j) {
-                for (unsigned k = 0; k < harmonicOrder - 1; ++k) {
-                    this->getNextPhase();
-                }
-                firstChannelData[j] += (float) (std::sin(TWO_PI * this->getNextPhase()) *
-                                                std::pow(1.0 / (double) harmonicOrder, 2) *
-                                                this->levelSlider.getValue());
-            }
-        }
-    }
-    this->phase = afterPhase;
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
-}
+///// Impulse (pulse) wave
+//
+///// Synthesized by summing sin() over frequency and all its harmonics at equal
+///// amplitude. To make it band limited only include harmonics that are at or
+///// below the nyquist limit.
+//void MainComponent::BL_impulseWave(float* & channelData) {
+//
+//}
+//
+///// Square wave
+//
+///// Synthesized by summing sin() over all ODD harmonics at 1/harmonic amplitude.
+///// To make it band limited only include harmonics that are at or below the
+///// nyquist limit.
+//void MainComponent::BL_squareWave(float* & channelData) {
+//
+//}
+//
+///// Sawtooth wave
+/////
+///// Synthesized by summing sin() over all harmonics at 1/harmonic amplitude. To make
+///// it band limited only include harmonics that are at or below the nyquist limit.
+//void MainComponent::BL_sawtoothWave(float* & channelData) {
+//
+//}
+//
+///// Triangle wave
+/////
+///// Synthesized by summing sin() over all ODD harmonics at 1/harmonic**2 amplitude.
+///// To make it band limited only include harmonics that are at or below the
+///// Nyquist limit.
+//void MainComponent::BL_triangleWave(float* & channelData) {
+//
+//}
 
 //==============================================================================
 // WaveTable Synthesis
@@ -568,38 +513,71 @@ void inline MainComponent::WT_wave(const AudioSourceChannelInfo& bufferToFill) {
 
 // Create a sine wave table
 void MainComponent::createSineTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize (1, tableSize + 1);
+    waveTable.setSize(1, this->tableSize + 1);
     waveTable.clear();
-    auto* samples = waveTable.getWritePointer (0);
+    float* samples = waveTable.getWritePointer(0);
     double p = 0.0;
-    auto phaseDelta = MathConstants<double>::twoPi / (double) (tableSize - 1);
-    for (auto i = 0; i < tableSize; ++i) {
-        samples[i] += std::sin(p);
-        p += phaseDelta;
+    auto d = TWO_PI / (double) (this->tableSize - 1);
+    for (auto i = 0; i < this->tableSize; ++i) {
+        samples[i] += (float) std::sin(p);
+        p += d;
     }
-    samples[tableSize] = samples[0];
+    samples[this->tableSize] = samples[0];
 }
 
 // Create an inpulse wave table
 void MainComponent::createImpulseTable(AudioSampleBuffer& waveTable) {
+    waveTable.setSize(1, this->tableSize + 1);
+    waveTable.clear();
+    float* samples = waveTable.getWritePointer(0);
+//    double p = 0.0;
+//    auto d = TWO_PI / (double) (this->tableSize - 1);
+//    for (auto i = 0; i < this->tableSize; ++i) {
+//        samples[i] += (float) std::sin(p);
+//        p += d;
+//    }
+    samples[1] = 1.0;
+    samples[this->tableSize] = samples[0];
 }
 
 // Create a square wave table
 void MainComponent::createSquareTable(AudioSampleBuffer& waveTable) {
+    waveTable.setSize(1, this->tableSize + 1);
+    waveTable.clear();
+    float* samples = waveTable.getWritePointer(0);
+    double p = 0.0;
+    auto d = TWO_PI / (double) (this->tableSize - 1);
+    for (auto i = 0; i < this->tableSize; ++i) {
+        samples[i] += p >= 0.5 ? 1 : -1;
+        p += d;
+    }
+    samples[this->tableSize] = samples[0];
 }
 
 // Create a sawtooth wave table
 void MainComponent::createSawtoothTable(AudioSampleBuffer& waveTable) {
+    waveTable.setSize(1, this->tableSize + 1);
+    waveTable.clear();
+    float* samples = waveTable.getWritePointer(0);
+    double p = 0.0;
+    auto d = TWO_PI / (double) (this->tableSize - 1);
+    for (auto i = 0; i < this->tableSize; ++i) {
+        samples[i] += (float) (p * 2 - 1);
+        p += d;
+    }
+    samples[this->tableSize] = samples[0];
 }
 
-// Create a triagle wave table
+// Create a triangle wave table
 void MainComponent::createTriangleTable(AudioSampleBuffer& waveTable) {
-}
-
-void MainComponent::Phase::setPhase(double newPhase) {
-    this->phase = newPhase;
-}
-
-void MainComponent::Phase::setPhaseDelta(double newPhaseDelta) {
-    this->phaseDelta = newPhaseDelta;
+    waveTable.setSize(1, this->tableSize + 1);
+    waveTable.clear();
+    float* samples = waveTable.getWritePointer(0);
+    double p = 0.0;
+    auto d = TWO_PI / (double) (this->tableSize - 1);
+    for (auto i = 0; i < this->tableSize; ++i) {
+        samples[i] += (float) (p <= 0.5 ? 4 * p - 1 : 3 - 4 * p);
+        p += d;
+    }
+    samples[this->tableSize] = samples[0];
 }

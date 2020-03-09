@@ -13,19 +13,6 @@
 struct MainComponent : public Component, public AudioSource,
 public Slider::Listener, public Button::Listener, public ComboBox::Listener, public Timer
 {
-    /**
-     * A inner class to hold the phase
-     */
-    class Phase {
-    public:
-        Phase(double phase, double delta) : phase(phase), phaseDelta(delta) {};
-        void setPhase(double);
-        void setPhaseDelta(double);
-    private:
-        double phase;
-        double phaseDelta;
-    };
-
     /// Constructor. Your method should take the following actions:
     /// * Add and make visible all subcomponents.
     /// * Add the main component as a listener to all the buttons and sliders.
@@ -59,7 +46,7 @@ public Slider::Listener, public Button::Listener, public ComboBox::Listener, pub
     /// * Set audioSourcePlayer's source to nullptr.
     /// * Remove the audioSourcePlayer as the deviceManager's callback.
     /// * Close the deviceManager.
-    ~MainComponent();
+    ~MainComponent() override;
 
     //==============================================================================
     // Component overrides
@@ -323,11 +310,6 @@ private:
     /// must be updated by prepareToPlay().
     double sampleRate {0.0};
 
-    /**
-     * Nyquist frequency. It is always the half of the sampleRate
-     */
-    double nyquistFrequency {0.0};
-
     /// The current phase position of the waveform. Its initial value
     /// 0.0 must be updated by the freqSlider.
     double phase {0.0};
@@ -347,15 +329,7 @@ private:
 
     /// A periodic function ranging 0.0 to 1.0. It returns the current phase
     /// value and post-increments phase by phaseDelta. See: std::fmod().
-    double inline getNextPhase();
-
-    /**
-     * Helper function to decide whether the next phase value starts a new period
-     * This function also modifies the phase in this mainComponent.
-     * @param p the current phase
-     * @return true if the next increment of phase starts a new period
-     */
-    bool inline isNextPhaseToZero();
+    double inline getNextPhaseAndUpdate();
 
     /// Generates samples in a uniform random distribution.
     void inline whiteNoise(const AudioSourceChannelInfo& bufferToFill) ;
@@ -373,16 +347,21 @@ private:
     void inline sineWave(const AudioSourceChannelInfo& bufferToFill) ;
 
     // Generators an inexpensive low frequency waves.
-    void inline LF_impulseWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline LF_squareWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline LF_sawtoothWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline LF_triangleWave(const AudioSourceChannelInfo& bufferToFill);
+    void inline WaveGenerator(const AudioSourceChannelInfo& bufferToFill);
+
+    float inline LF_impulseWave();
+    float inline LF_squareWave();
+    float inline LF_sawtoothWave();
+    float inline LF_triangleWave();
 
     // Generators for band limited waves.
-    void inline BL_impulseWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline BL_squareWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline BL_sawtoothWave(const AudioSourceChannelInfo& bufferToFill);
-    void inline BL_triangleWave(const AudioSourceChannelInfo& bufferToFill);
+    void inline BL_WaveGenerator(const AudioSourceChannelInfo& bufferToFill);
+    void inline BL_sineWaveAdder(const AudioSourceChannelInfo&, bool, int, double, double, double);
+
+//    void inline BL_impulseWave(float* & channelData);
+//    void inline BL_squareWave(float* & channelData);
+//    void inline BL_sawtoothWave(float* & channelData);
+//    void inline BL_triangleWave(float* & channelData);
 
     /// Generates samples using a wavetable oscillator.
     void inline WT_wave(const AudioSourceChannelInfo& bufferToFill);
@@ -400,8 +379,6 @@ private:
     /// prevout + (alpha * (value - prevout)
     /// e.g. for i from 1 to n y[i] := y[i-1] + α * (x[i] - y[i-1])
     static inline float lowPassFilter(float value, float previousOutput, float alpha);
-
-    static inline int getHarmonicsNumber(float nyquistFrequency, float baseFrequency);
 
     //==============================================================================
     // Wavetable support
