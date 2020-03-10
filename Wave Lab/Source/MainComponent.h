@@ -162,9 +162,6 @@ public Slider::Listener, public Button::Listener, public ComboBox::Listener, pub
     /// draw first bar at x=0  and second bar at 100-width.
     inline void drawPlayButton(bool);
 
-    /// Called at startup to create the wavetables.
-    void createWaveTables();
-
 private:
 
     /// Enumeration identifying all the different waveforms the app
@@ -175,8 +172,7 @@ private:
     SineWave,
     LF_ImpulseWave, LF_SquareWave, LF_SawtoothWave, LF_TriangeWave,
     BL_ImpulseWave, BL_SquareWave, BL_SawtoothWave, BL_TriangeWave,
-    WT_SineWave,
-    WT_ImpulseWave, WT_SquareWave, WT_SawtoothWave, WT_TriangleWave,
+    WT_SineWave, WT_ImpulseWave, WT_SquareWave, WT_SawtoothWave, WT_TriangleWave,
     WT_START = WT_SineWave
     };
 
@@ -324,6 +320,20 @@ private:
      */
     const double TWO_PI = M_PI * 2;
 
+    /**
+     * A random float generator
+     * @param fromZero if true then generate random in range [0.0, number], or [-number, number]
+     * @param number the range of the random number
+     * @return a random float
+     */
+    static float inline randomGenerator(bool fromZero, float number);
+
+    /// The change from one filter output to the next is proportional to the
+    /// difference between the previous output and the next input.
+    /// prevout + (alpha * (value - prevout)
+    /// e.g. for i from 1 to n y[i] := y[i-1] + α * (x[i] - y[i-1])
+    static float inline lowPassFilter(float value, float previousOutput, float alpha);
+
     //==============================================================================
     // Waveforms
 
@@ -341,13 +351,11 @@ private:
     /// Generates samples in a 'brown' distribution (-6dB per octave).
     void inline brownNoise(const AudioSourceChannelInfo& bufferToFill);
 
-//    void inline brownNoiseFilt(const AudioSourceChannelInfo& bufferToFill);
-
     /// Generates a sine wave at a specified frequency and amplitude.
     void inline sineWave(const AudioSourceChannelInfo& bufferToFill) ;
 
     // Generators an inexpensive low frequency waves.
-    void inline WaveGenerator(const AudioSourceChannelInfo& bufferToFill);
+    void inline LF_WaveGenerator(const AudioSourceChannelInfo& bufferToFill);
 
     float inline LF_impulseWave();
     float inline LF_squareWave();
@@ -355,55 +363,40 @@ private:
     float inline LF_triangleWave();
 
     // Generators for band limited waves.
-    void inline BL_WaveGenerator(const AudioSourceChannelInfo& bufferToFill);
-    void inline BL_sineWaveAdder(const AudioSourceChannelInfo&, bool, int, double, double, double);
-
-//    void inline BL_impulseWave(float* & channelData);
-//    void inline BL_squareWave(float* & channelData);
-//    void inline BL_sawtoothWave(float* & channelData);
-//    void inline BL_triangleWave(float* & channelData);
+    void inline BL_sineWaveAdder(const AudioSourceChannelInfo&, bool, int);
 
     /// Generates samples using a wavetable oscillator.
     void inline WT_wave(const AudioSourceChannelInfo& bufferToFill);
 
-    /**
-     * A random float generator
-     * @param fromZero if true then generate random in range [0.0, number], or [-number, number]
-     * @param number the range of the random number
-     * @return a random float
-     */
-    static float inline randomGenerator(bool fromZero, float number);
-
-    /// The change from one filter output to the next is proportional to the
-    /// difference between the previous output and the next input.
-    /// prevout + (alpha * (value - prevout)
-    /// e.g. for i from 1 to n y[i] := y[i-1] + α * (x[i] - y[i-1])
-    static inline float lowPassFilter(float value, float previousOutput, float alpha);
-
     //==============================================================================
     // Wavetable support
-
-    void createSineTable(AudioSampleBuffer& waveTable);
-    void createSquareTable(AudioSampleBuffer& waveTable);
-    void createImpulseTable(AudioSampleBuffer& waveTable);
-    void createSawtoothTable(AudioSampleBuffer& waveTable);
-    void createTriangleTable(AudioSampleBuffer& waveTable);
-    void wavetablePrepareToPlay(int wttype);
-    void wavetableSetFreq(float amp);
-    /// Wavetable for sine waves.
+    void inline createSineTable(AudioSampleBuffer& waveTable);
+    void inline WT_Sine(const AudioSourceChannelInfo& bufferToFill);
+    void inline WT_Impulse(const AudioSourceChannelInfo& bufferToFill);
+    void inline WT_Square(const AudioSourceChannelInfo& bufferToFill);
+    void inline WT_Saw(const AudioSourceChannelInfo& bufferToFill);
+    void inline WT_Triangle(const AudioSourceChannelInfo& bufferToFill);
     AudioSampleBuffer sineTable;
-    /// Wavetable for square waves.
-    AudioSampleBuffer squareTable;
-    /// Wavetable for impulse waves.
-    AudioSampleBuffer impulseTable;
-    /// Wavetable for sawtooth waves.
-    AudioSampleBuffer sawtoothTable;
-    /// Wavetable for triangle waves.
-    AudioSampleBuffer triangleTable;
+    const int WAVE_TABLE_SIZE = 512;
+    std::unique_ptr<WavetableOscillator> wavetable;
+//    void createSquareTable(AudioSampleBuffer& waveTable);
+//    void createImpulseTable(AudioSampleBuffer& waveTable);
+//    void createSawtoothTable(AudioSampleBuffer& waveTable);
+//    void createTriangleTable(AudioSampleBuffer& waveTable);
+//    void wavetablePrepareToPlay(int wttype);
+//    void wavetableSetFreq(float amp);
+    /// Wavetable for sine waves.
+//    /// Wavetable for square waves.
+//    AudioSampleBuffer squareTable;
+//    /// Wavetable for impulse waves.
+//    AudioSampleBuffer impulseTable;
+//    /// Wavetable for sawtooth waves.
+//    AudioSampleBuffer sawtoothTable;
+//    /// Wavetable for triangle waves.
+//    AudioSampleBuffer triangleTable;
     /// Size of wavetables
-    int tableSize = 512;
     /// Array of wavetable oscillators
-    std::vector<std::unique_ptr<WavetableOscillator>> oscillators;
+//    std::vector<std::unique_ptr<WavetableOscillator>> oscillators;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

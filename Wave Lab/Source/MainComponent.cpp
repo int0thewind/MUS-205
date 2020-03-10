@@ -32,8 +32,8 @@ audioVisualizer(2) {
     this->levelSlider.setSliderStyle(Slider::LinearHorizontal);
     this->levelSlider.setTextBoxStyle(Slider::TextBoxLeft, true,
             this->SLIDER_TEXTBOX_WIDTH, this->COMPONENT_HEIGHT);
-    this->addAndMakeVisible(levelSlider);
     this->levelSlider.setEnabled(false);
+    this->addAndMakeVisible(levelSlider);
 
     // Set up freqLabel
     this->freqLabel.setJustificationType(Justification::centredRight);
@@ -76,6 +76,10 @@ audioVisualizer(2) {
 
     // Let our device manager manage our audio source player
     this->deviceManager.addAudioCallback(&this->audioSourcePlayer);
+
+    // Wavetable initialisation
+    this->createSineTable(this->sineTable);
+    this->wavetable = std::make_unique<WavetableOscillator>(this->sineTable);
 }
 
 MainComponent::~MainComponent() {
@@ -205,11 +209,11 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sr) {
     this->audioVisualizer.setBufferSize(samplesPerBlockExpected);
     this->audioVisualizer.setSamplesPerBlock(8);
     this->phaseDelta = this->freqSlider.getValue() / this->sampleRate;
-    this->tableSize = samplesPerBlockExpected;
+//    this->WAVE_TABLE_SIZE = samplesPerBlockExpected;
+//    this->createWaveTables();
 }
 
-void MainComponent::releaseResources() {
-}
+void MainComponent::releaseResources() {}
 
 void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill) {
     this->phaseDelta = this->freqSlider.getValue() / this->sampleRate;
@@ -222,11 +226,11 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
         case LF_ImpulseWave:
         case LF_SquareWave:
         case LF_SawtoothWave:
-        case LF_TriangeWave: WaveGenerator(bufferToFill); break;
-        case BL_ImpulseWave:
-        case BL_SquareWave:
-        case BL_SawtoothWave:
-        case BL_TriangeWave:  BL_WaveGenerator(bufferToFill); break;
+        case LF_TriangeWave:  LF_WaveGenerator(bufferToFill); break;
+        case BL_ImpulseWave:  BL_sineWaveAdder(bufferToFill, false, 0); break;
+        case BL_SquareWave:   BL_sineWaveAdder(bufferToFill, true, 1); break;
+        case BL_SawtoothWave: BL_sineWaveAdder(bufferToFill, false, 1); break;
+        case BL_TriangeWave:  BL_sineWaveAdder(bufferToFill, true, 2); break;
         case WT_SineWave:
         case WT_ImpulseWave:
         case WT_SquareWave:
@@ -279,19 +283,6 @@ void MainComponent::openAudioSettings() {
     dialogWindow.launchAsync();
 }
 
-void MainComponent::createWaveTables() {
-    createSineTable(sineTable);
-    oscillators.push_back(std::make_unique<WavetableOscillator>(sineTable));
-    createImpulseTable(impulseTable);
-    oscillators.push_back(std::make_unique<WavetableOscillator>(impulseTable));
-    createSquareTable(squareTable);
-    oscillators.push_back(std::make_unique<WavetableOscillator>(squareTable));
-    createSawtoothTable(sawtoothTable);
-    oscillators.push_back(std::make_unique<WavetableOscillator>(sawtoothTable));
-    createTriangleTable(triangleTable);
-    oscillators.push_back(std::make_unique<WavetableOscillator>(triangleTable));
-}
-
 //==============================================================================
 // Noise
 //==============================================================================
@@ -340,9 +331,7 @@ void MainComponent::sineWave(const AudioSourceChannelInfo& bufferToFill) {
     }
     for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
     }
 }
 
@@ -350,25 +339,23 @@ void MainComponent::sineWave(const AudioSourceChannelInfo& bufferToFill) {
 // Low Frequency Waveforms
 //==============================================================================
 
-void MainComponent::WaveGenerator(const AudioSourceChannelInfo &bufferToFill) {
+void MainComponent::LF_WaveGenerator(const AudioSourceChannelInfo &bufferToFill) {
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
     for (int i = 0; i < bufferToFill.numSamples; ++i) {
         switch (this->waveformId) {
-            case LF_ImpulseWave: firstChannelData[i] = this->LF_impulseWave(); break;
-            case LF_SquareWave: firstChannelData[i] = this->LF_squareWave(); break;
+            case LF_ImpulseWave:  firstChannelData[i] = this->LF_impulseWave();  break;
+            case LF_SquareWave:   firstChannelData[i] = this->LF_squareWave();   break;
             case LF_SawtoothWave: firstChannelData[i] = this->LF_sawtoothWave(); break;
-            case LF_TriangeWave: firstChannelData[i] = this->LF_triangleWave(); break;
+            case LF_TriangeWave:  firstChannelData[i] = this->LF_triangleWave(); break;
             default:
                 std::cerr << "Error! Wrong function call! \n"
-                          << "Other function instead of low frequency waves called the function"
-                          << std::endl;
+                          << "Other function instead of low frequency waves called the function."
+                          << std::endl; break;
         }
     }
     for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
         float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
     }
 }
 
@@ -376,7 +363,7 @@ float MainComponent::LF_impulseWave() {
     double currentPhase = this->getNextPhaseAndUpdate();
     double nextPhase = this->phase;
     auto level =  (float) this->levelSlider.getValue();
-    return currentPhase >= nextPhase ? (float) level : 0.0;
+    return currentPhase >= nextPhase ? (float) level : 0.0f;
 }
 
 float MainComponent::LF_squareWave() {
@@ -386,10 +373,7 @@ float MainComponent::LF_squareWave() {
 
 float MainComponent::LF_sawtoothWave() {
     return (float) ((this->getNextPhaseAndUpdate() * 2 - 1) * this->levelSlider.getValue());
-
 }
-
-/// Triangle wave
 
 float MainComponent::LF_triangleWave() {
     double p = this->getNextPhaseAndUpdate();
@@ -400,184 +384,181 @@ float MainComponent::LF_triangleWave() {
 // Band Limited Waveforms
 //==============================================================================
 
-void inline MainComponent::BL_WaveGenerator(const AudioSourceChannelInfo &bufferToFill) {
-    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    const auto initialPhase = this->phase;
-    for (int i = 0; i < bufferToFill.numSamples; ++i) {
-        switch (this->waveformId) {
-            // Call the same Low Frequency waves as the base wave generator
-            case BL_ImpulseWave: firstChannelData[i] = this->LF_impulseWave(); break;
-            case BL_SquareWave: firstChannelData[i] = this->LF_squareWave(); break;
-            case BL_SawtoothWave: firstChannelData[i] = this->LF_sawtoothWave(); break;
-            case BL_TriangeWave: firstChannelData[i] = this->LF_triangleWave(); break;
-            default:
-                std::cerr << "Error! Wrong function call! \n"
-                          << "Other function instead of band limited waves called the function"
-                          << std::endl;
-        }
-    }
+void MainComponent::BL_sineWaveAdder(const AudioSourceChannelInfo &bufferToFill, bool oddHarmonics, int amplitudeFactor) {
     const double baseFrequency = this->freqSlider.getValue();
-    const double level = this->levelSlider.getValue();
-    switch (this->waveformId) {
-        // Call the same Low Frequency waves as the base wave generator
-        case BL_ImpulseWave: this->BL_sineWaveAdder(bufferToFill,
-                false, 0, initialPhase, baseFrequency, level); break;
-        case BL_SquareWave: this->BL_sineWaveAdder(bufferToFill,
-                true, 1, initialPhase, baseFrequency, level); break;
-        case BL_SawtoothWave: this->BL_sineWaveAdder(bufferToFill,
-                false, 1, initialPhase, baseFrequency, level); break;
-        case BL_TriangeWave: this->BL_sineWaveAdder(bufferToFill,
-                true, 2, initialPhase, baseFrequency, level); break;
-        default:
-            std::cerr << "Error! Wrong function call! \n"
-                      << "Other function instead of band limited waves called the function"
-                      << std::endl;
-    }
-
-    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
-        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-        for (int i = 0; i < bufferToFill.numSamples; ++i) {
-            channelData[i] = firstChannelData[i];
-        }
-    }
-}
-
-void MainComponent::BL_sineWaveAdder(const AudioSourceChannelInfo &bufferToFill,
-        const bool oddHarmonics, const int amplitude,
-        const double initialPhase, const double baseFrequency, const double level) {
+    if (baseFrequency < 20.0) { return; }
+    const double initialPhase = this->phase;
     float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
-    int totalHarmonics = this->sampleRate / baseFrequency / 2;
-
-    for (int h = 1; h < totalHarmonics; ++h) {
-        if (oddHarmonics && h % 2 == 0) {
-            continue;
-        } else {
-            double p = initialPhase;
-
-            double amp = level;
-            if (amplitude == 0) amp = amp;
-            else if (amplitude == 1) amp /= h;
-            else if (amplitude == 2) amp /= std::pow(h, 2);
-
+    if (baseFrequency >= 1.0) {
+        for (int h = 1; h * baseFrequency <= sampleRate / 2; oddHarmonics ? h += 2 : h++) {
+            this->phase = initialPhase;
+            double amp = this->levelSlider.getValue() / std::pow(h, amplitudeFactor);
             for (int i = 0; i < bufferToFill.numSamples; ++i) {
-                firstChannelData[i] += (float) (std::sin(TWO_PI * p * h) * amp);
-                p += this->phaseDelta;
+                firstChannelData[i] += (float) (std::sin(TWO_PI * getNextPhaseAndUpdate() * h) * amp);
             }
         }
     }
-
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
 }
-
-///// Impulse (pulse) wave
-//
-///// Synthesized by summing sin() over frequency and all its harmonics at equal
-///// amplitude. To make it band limited only include harmonics that are at or
-///// below the nyquist limit.
-//void MainComponent::BL_impulseWave(float* & channelData) {
-//
-//}
-//
-///// Square wave
-//
-///// Synthesized by summing sin() over all ODD harmonics at 1/harmonic amplitude.
-///// To make it band limited only include harmonics that are at or below the
-///// nyquist limit.
-//void MainComponent::BL_squareWave(float* & channelData) {
-//
-//}
-//
-///// Sawtooth wave
-/////
-///// Synthesized by summing sin() over all harmonics at 1/harmonic amplitude. To make
-///// it band limited only include harmonics that are at or below the nyquist limit.
-//void MainComponent::BL_sawtoothWave(float* & channelData) {
-//
-//}
-//
-///// Triangle wave
-/////
-///// Synthesized by summing sin() over all ODD harmonics at 1/harmonic**2 amplitude.
-///// To make it band limited only include harmonics that are at or below the
-///// Nyquist limit.
-//void MainComponent::BL_triangleWave(float* & channelData) {
-//
-//}
 
 //==============================================================================
 // WaveTable Synthesis
 //==============================================================================
 
-// The audio block loop
 void inline MainComponent::WT_wave(const AudioSourceChannelInfo& bufferToFill) {
+    switch (this->waveformId) {
+        case WT_SineWave:     WT_Sine(bufferToFill);     break;
+        case WT_ImpulseWave:  WT_Impulse(bufferToFill);  break;
+        case WT_SquareWave:   WT_Square(bufferToFill);   break;
+        case WT_SawtoothWave: WT_Saw(bufferToFill);      break;
+        case WT_TriangleWave: WT_Triangle(bufferToFill); break;
+        default:
+            std::cerr << "ERROR! Wrong function called wavetable generator."
+                      << std::endl;
+    }
+}
+
+void MainComponent::WT_Sine(const AudioSourceChannelInfo& bufferToFill) {
+    this->wavetable->setFrequency((float) this->freqSlider.getValue(), (float) this->sampleRate);
+    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    for (int i = 0; i < bufferToFill.numSamples; i++) {
+        firstChannelData[i] = (float) (this->wavetable->getNextSample() * this->levelSlider.getValue());
+    }
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
+}
+
+void MainComponent::WT_Impulse(const AudioSourceChannelInfo& bufferToFill) {
+    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    const double baseFrequency = this->freqSlider.getValue();
+    if (baseFrequency < 20.0) { return; }
+    for (int h = 1; h * baseFrequency <= sampleRate / 2; ++h) {
+        this->wavetable->setFrequency((float) (h * baseFrequency), (float) this->sampleRate);
+        for (int i = 0; i < bufferToFill.numSamples; i++) {
+            firstChannelData[i] += (float) (this->wavetable->getNextSample() * this->levelSlider.getValue());
+        }
+    }
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
+}
+
+void MainComponent::WT_Square(const AudioSourceChannelInfo& bufferToFill) {
+    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    const double baseFrequency = this->freqSlider.getValue();
+    if (baseFrequency < 20.0) { return; }
+    for (int h = 1; h * baseFrequency <= sampleRate / 2; h += 2) {
+        this->wavetable->setFrequency((float) (h * baseFrequency), (float) this->sampleRate);
+        for (int i = 0; i < bufferToFill.numSamples; i++) {
+            firstChannelData[i] += (float) (this->wavetable->getNextSample() * this->levelSlider.getValue() / h);
+        }
+    }
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
+}
+
+void MainComponent::WT_Saw(const AudioSourceChannelInfo& bufferToFill) {
+    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    const double baseFrequency = this->freqSlider.getValue();
+    if (baseFrequency < 20.0) { return; }
+    for (int h = 1; h * baseFrequency <= sampleRate / 2; ++h) {
+        this->wavetable->setFrequency((float) (h * baseFrequency), (float) this->sampleRate);
+        for (int i = 0; i < bufferToFill.numSamples; i++) {
+            firstChannelData[i] += (float) (this->wavetable->getNextSample() * this->levelSlider.getValue() / h);
+        }
+    }
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
+}
+
+void MainComponent::WT_Triangle(const AudioSourceChannelInfo& bufferToFill) {
+    float* firstChannelData = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
+    const double baseFrequency = this->freqSlider.getValue();
+    if (baseFrequency < 20.0) { return; }
+    const double level = this->levelSlider.getValue();
+    for (int h = 1; h * baseFrequency <= sampleRate / 2; h += 2) {
+        this->wavetable->setFrequency((float) (h * baseFrequency), (float) this->sampleRate);
+        for (int i = 0; i < bufferToFill.numSamples; i++) {
+            firstChannelData[i] += (float) (this->wavetable->getNextSample() * level / std::pow(h, 2));
+        }
+    }
+    for (int channel = 1; channel < bufferToFill.buffer->getNumChannels(); ++channel) {
+        float* channelData = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
+        std::memcpy(channelData, firstChannelData, bufferToFill.numSamples * sizeof(float));
+    }
 }
 
 // Create a sine wave table
 void MainComponent::createSineTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize(1, this->tableSize + 1);
+    waveTable.setSize(1, this->WAVE_TABLE_SIZE + 1);
     waveTable.clear();
     float* samples = waveTable.getWritePointer(0);
     double p = 0.0;
-    auto d = TWO_PI / (double) (this->tableSize - 1);
-    for (auto i = 0; i < this->tableSize; ++i) {
+    double d = TWO_PI / (double) (this->WAVE_TABLE_SIZE - 1);
+    for (auto i = 0; i < this->WAVE_TABLE_SIZE; ++i) {
         samples[i] += (float) std::sin(p);
         p += d;
     }
-    samples[this->tableSize] = samples[0];
+    samples[this->WAVE_TABLE_SIZE] = samples[0];
 }
 
-// Create an inpulse wave table
-void MainComponent::createImpulseTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize(1, this->tableSize + 1);
-    waveTable.clear();
-    float* samples = waveTable.getWritePointer(0);
+//// Create an inpulse wave table
+//void MainComponent::createImpulseTable(AudioSampleBuffer& waveTable) {
+//    waveTable.setSize(1, this->tableSize + 1);
+//    waveTable.clear();
+//    float* samples = waveTable.getWritePointer(0);
+//    samples[1] = 1.0;
+//    samples[this->tableSize] = samples[0];
+//}
+//
+//// Create a square wave table
+//void MainComponent::createSquareTable(AudioSampleBuffer& waveTable) {
+//    waveTable.setSize(1, this->tableSize + 1);
+//    waveTable.clear();
+//    float* samples = waveTable.getWritePointer(0);
 //    double p = 0.0;
 //    auto d = TWO_PI / (double) (this->tableSize - 1);
 //    for (auto i = 0; i < this->tableSize; ++i) {
-//        samples[i] += (float) std::sin(p);
+//        samples[i] += p >= 0.5 ? 1 : -1;
 //        p += d;
 //    }
-    samples[1] = 1.0;
-    samples[this->tableSize] = samples[0];
-}
-
-// Create a square wave table
-void MainComponent::createSquareTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize(1, this->tableSize + 1);
-    waveTable.clear();
-    float* samples = waveTable.getWritePointer(0);
-    double p = 0.0;
-    auto d = TWO_PI / (double) (this->tableSize - 1);
-    for (auto i = 0; i < this->tableSize; ++i) {
-        samples[i] += p >= 0.5 ? 1 : -1;
-        p += d;
-    }
-    samples[this->tableSize] = samples[0];
-}
-
-// Create a sawtooth wave table
-void MainComponent::createSawtoothTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize(1, this->tableSize + 1);
-    waveTable.clear();
-    float* samples = waveTable.getWritePointer(0);
-    double p = 0.0;
-    auto d = TWO_PI / (double) (this->tableSize - 1);
-    for (auto i = 0; i < this->tableSize; ++i) {
-        samples[i] += (float) (p * 2 - 1);
-        p += d;
-    }
-    samples[this->tableSize] = samples[0];
-}
-
-// Create a triangle wave table
-void MainComponent::createTriangleTable(AudioSampleBuffer& waveTable) {
-    waveTable.setSize(1, this->tableSize + 1);
-    waveTable.clear();
-    float* samples = waveTable.getWritePointer(0);
-    double p = 0.0;
-    auto d = TWO_PI / (double) (this->tableSize - 1);
-    for (auto i = 0; i < this->tableSize; ++i) {
-        samples[i] += (float) (p <= 0.5 ? 4 * p - 1 : 3 - 4 * p);
-        p += d;
-    }
-    samples[this->tableSize] = samples[0];
-}
+//    samples[this->tableSize] = samples[0];
+//}
+//
+//// Create a sawtooth wave table
+//void MainComponent::createSawtoothTable(AudioSampleBuffer& waveTable) {
+//    waveTable.setSize(1, this->tableSize + 1);
+//    waveTable.clear();
+//    float* samples = waveTable.getWritePointer(0);
+//    double p = 0.0;
+//    auto d = TWO_PI / (double) (this->tableSize - 1);
+//    for (auto i = 0; i < this->tableSize; ++i) {
+//        samples[i] += (float) (p * 2 - 1);
+//        p += d;
+//    }
+//    samples[this->tableSize] = samples[0];
+//}
+//
+//// Create a triangle wave table
+//void MainComponent::createTriangleTable(AudioSampleBuffer& waveTable) {
+//    waveTable.setSize(1, this->tableSize + 1);
+//    waveTable.clear();
+//    float* samples = waveTable.getWritePointer(0);
+//    double p = 0.0;
+//    auto d = TWO_PI / (double) (this->tableSize - 1);
+//    for (auto i = 0; i < this->tableSize; ++i) {
+//        samples[i] += (float) (p <= 0.5 ? 4 * p - 1 : 3 - 4 * p);
+//        p += d;
+//    }
+//    samples[this->tableSize] = samples[0];
+//}

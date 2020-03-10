@@ -47,10 +47,9 @@ public:
         /// add to value 1 the proportional amount (frac) of the difference between the two samples.
         auto currentSample = value0 + frac * (value1 - value0);
         /// increment the currentIndex by the tableDelta (freq*sr/tableSize) and wrap if needed.
-        if ((currentIndex += tableDelta) > tableSize) {
-            currentIndex -= tableSize;
+        if ((this->currentIndex += this->tableDelta) > this->tableSize) {
+            this->currentIndex -= this->tableSize;
         }
-
         return currentSample;
     }
   
