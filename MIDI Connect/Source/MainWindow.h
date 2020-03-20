@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "MainComponent.h"
 
 /// The main application window.
 struct MainWindow  : public DocumentWindow {
@@ -23,4 +24,10 @@ struct MainWindow  : public DocumentWindow {
 
 private:
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
+
+  const int MIN_WIDTH = 608;
+  const int MIN_HEIGHT = 412;
+  const int FACTOR = 2;
+
+  std::unique_ptr<MainContentComponent> mainComponent;
 };
