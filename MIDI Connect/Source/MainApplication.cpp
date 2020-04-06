@@ -49,7 +49,7 @@ void MainApplication::initialise(const String& commandLine) {
     String errorString = this->audioDeviceManager.initialiseWithDefaultDevices(
             0, 2);
     assert(errorString == "");
-    this->mainWindow = std::make_unique<MainWindow>(getApplicationName());
+    this->mainWindow = std::make_unique<MainWindow>(this->getApplicationName());
 }
 
 void MainApplication::shutdown() { this->mainWindow = nullptr; }

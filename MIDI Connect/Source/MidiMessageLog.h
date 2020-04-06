@@ -71,24 +71,24 @@ struct MidiMessageLog : public ListBox, private ListBoxModel, private AsyncUpdat
   /// * [213265.06] ProgramChange: channel=1, number=1
   /// * [213821.11] PitchWheel: channel=1, value=8192
   /// * [213851.85] ControlChange: channel=1, controller=Modulation Wheel (coarse), value=6
-  static const String midiMessageString(const MidiMessage& msg) ;
+  static const String convertMidiMessageToString(const MidiMessage& msg) ;
   
 private:
   //==============================================================================
+    
+    /// An array of MIDI message strings to display in the logger.
+    StringArray messageLog;
 
-  /// An array of MIDI message strings to display in the logger.
-  StringArray messageLog;
+    /// Converts a key number 0-127 into floating point Hertz: 440.0 * 2^((KN-69)/12).
+    static inline float keynumToFrequency(int keynum) ;
 
-  /// Converts a key number 0-127 into floating point Hertz: 440.0 * 2^((KN-69)/12).
-  static float keynumToFrequency(int keynum) ;
-  
-  /// Converts an integer key number (0-127) into a note name. Midi note names
-  /// should be "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"
-  /// and octaves are "00", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9".
-  static String keynumToPitch(int keynum) ;
-  
-  /// Converts an integer velocity 0-127 into floating point amplitude 0.0-1.0.
-  static float velocityToAmplitude(int velocity) ;
-  //==============================================================================
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MidiMessageLog)
+    /// Converts an integer key number (0-127) into a note name. Midi note names
+    /// should be "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"
+    /// and octaves are "00", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9".
+    static inline String keynumToPitch(int keynum) ;
+
+    /// Converts an integer velocity 0-127 into floating point amplitude 0.0-1.0.
+    static inline float velocityToAmplitude(int velocity) ;
+    //==============================================================================
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MidiMessageLog)
 };

@@ -25,9 +25,9 @@ public:
     /// edges. Set the initial toggle state of messageLogButton to be "on" without
     /// triggering the button's callback.
     /// * Add and configure the clearButton and settingsButton.
-    /// * Assign the midiKeyboard member a new MidiKeyboardComponent, then add and
+    /// * Assign the midiKeyboardComponent member a new MidiKeyboardComponent, then add and
     /// make it visible. Set its Middle C octave to be the 4th octave.
-    /// * Add our component as the keyboardState's listener.
+    /// * Add our component as the midiKeyboardState's listener.
     /// * Add and make visible the midiMessageLog.
     /// * Set the midiPianoRoll to be visible but do NOT add it.
     /// * Call the audio manager's addMidiInputCallback() method
@@ -68,7 +68,7 @@ public:
     /// (abutted together) each with a height of 24 and a width of 90.
     /// * There should be an 8 pixel space between the top line and the
     /// midiKeyboardComponent.
-    /// * The midiKeyboard is 64 pixels high and occupies the width of the
+    /// * The midiKeyboardComponent is 64 pixels high and occupies the width of the
     /// MainComponent.
     /// * The midiMessageLog and midiPianoRoll viewers take the remainder of
     /// the component's area beginning 8 pixels below the keyboard.
@@ -102,14 +102,14 @@ public:
     /// perform the following steps:
     ///   - Call removeChildComponent on the midiPianoRoll to remove it from this component.
     ///   - Call midiMessageLog's clear method to remove any existing display.
-    ///   - Call the keyboardState's reset() method to zero out any existing data.
+    ///   - Call the midiKeyboardState's reset() method to zero out any existing data.
     ///   - Call addChildComponent on the midiMessageLog.
     /// * If the pianoRollButton was clicked (and it was not already toggled on) then
     /// take analogous steps as outlined for the messageLogButton.
     /// * If the clearButton was clicked then clear the message log or
     /// the piano roll, whichever is currently active. See: getToggleState().
     /// * If the settingsButton was clicked then open the audio settings.
-    void buttonClicked(Button* button ) override ;
+    void buttonClicked(Button* button) override;
 
     /// The MidiKeyboardComponent callback that responds to NoteOns. When
     /// triggered this method will create a NoteOn and route it to the
@@ -128,14 +128,14 @@ public:
     // MainContentComponent members
 
     /// Loads the sfzero synth with the specified sound font file.
-    void loadSoundFont(juce::File& fontFile);
+    void inline loadSoundFont(juce::File& fontFile);
 
     /// Adds the message to either the MidiMessageLog or the MidiPianoRoll,
     /// whichever is currently visible.
-    void showMidiMessage(const MidiMessage& message);
+    void inline showMidiMessage(const MidiMessage& message);
 
     /// Adds the message to the internal syth for playback.
-    void playMidiMessage(const MidiMessage& message);
+    void inline playMidiMessage(const MidiMessage& message);
 
     /// If true the midi input callback will return without adding input. This
     /// member should be set to true by MainApplication::systemRequestedQuit()
@@ -148,44 +148,34 @@ private:
     /// does not enable them. See the WaveLab app for more information.
     void inline openAudioSettings();
 
-    /**
-     * A variable indicating the group id of the message and piano roll button
-     */
+    /** A variable indicating the group id of the message and piano roll button */
     const int GROUP_ID = 1;
 
+    /* Graphical Components */
     /// A button that displays "Audio Settings...".
     TextButton settingsButton;
-
     /// A toggle button that displays "Message Log".
     TextButton messageLogButton;
-
     /// A toggle button that displays "Piano Roll".
     TextButton pianoRollButton;
-
     /// A button that displays "Clear".
     TextButton clearButton;
-
-    /// An object that manages a MidiKeyboardComponent
-    MidiKeyboardState keyboardState;
-
-    /// A juce component that displays an interactive midi keyboard.
-    std::unique_ptr<MidiKeyboardComponent> midiKeyboard;
-
     /// A graphical component that displays incoming MIDI messages.
     MidiMessageLog midiMessageLog;
-
     /// A component that displays an animation of incoming MIDI messages.
     MidiPianoRoll midiPianoRoll;
+    /// A juce component that displays an interactive midi keyboard.
+    std::unique_ptr<MidiKeyboardComponent> midiKeyboardComponent;
 
+    /* Non graphical components: MIDI handling components here. */
+    /// An object that manages a MidiKeyboardComponent
+    MidiKeyboardState midiKeyboardState;
     /// Reference to the application's device manager.
     AudioDeviceManager& audioManager;
-
     /// The SFZero soundfont synth.
     std::unique_ptr<sfzero::SFZeroAudioProcessor> sfZeroAudioProcessor;
-
     /// An audio processor player to play the SFZeroAudioProcessor
     AudioProcessorPlayer sfZeroPlayer;
-
     /// The currently open MIDI output device. Currently null;
     std::unique_ptr<MidiOutput> midiOutputDevice;
 

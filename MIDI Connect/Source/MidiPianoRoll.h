@@ -58,7 +58,7 @@ struct MidiPianoRoll : public AnimatedAppComponent {
   /// If the incoming midi message is a noteOff then that note will be found and
   /// have its haveNoteOff value set to true if it has not already been
   /// turned off.
-  void addMidiMessage (const MidiMessage& message) ;
+  void addMidiMessage(const MidiMessage& message);
   
   /// Deletes all PianoRollNotes in the notes array (see below).
   void clear();
