@@ -31,11 +31,11 @@ public:
 
   static MainApplication& getApp();
 
-  MediaManager* getMediaManager(){return mediaManager.get();}
+  MediaManager* getMediaManager();
 
 private:
 
-  void closeAllAlertAndDialogWindows();
+  static void closeAllAlertAndDialogWindows();
   std::unique_ptr<MediaManager> mediaManager;
   std::unique_ptr<MainWindow> mainWindow;
 };

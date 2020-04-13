@@ -5,18 +5,20 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "MainComponent.h"
 
 /// The main application window.
 class MainWindow  : public DocumentWindow {
 public:
   
-  MainWindow(String name);
+    explicit MainWindow(const String& name);
 
-  //============================================================================
-  // DocumentWindow overrides
+    //============================================================================
+    // DocumentWindow overrides
 
-  void closeButtonPressed() override;
+    void closeButtonPressed() override;
   
 private:
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
+    std::unique_ptr<MainComponent> mainComponent;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
 };
