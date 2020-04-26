@@ -39,8 +39,8 @@ MainContentComponent::MainContentComponent()
     midiMessageLog.setVisible(true);
     // midi piano roll
     // Make it visible but do not add
-    this->addChildComponent(midiPianoRoll);
-    midiPianoRoll.setVisible(false);
+//    this->addChildComponent(midiPianoRoll);
+    midiPianoRoll.setVisible(true);
 
     midiKeyboardState.addListener(this);
 
@@ -116,8 +116,8 @@ void MainContentComponent::buttonClicked(Button* button) {
             this->messageLogButton.setToggleState(true, NotificationType::dontSendNotification);
             this->midiMessageLog.clear();
             this->midiKeyboardState.reset();
-            this->midiPianoRoll.setVisible(false);
-            this->midiMessageLog.setVisible(true);
+            this->addChildComponent(midiMessageLog);
+            this->removeChildComponent(&midiPianoRoll);
             this->repaint();
         }
     } else if (button == &this->pianoRollButton) {
@@ -125,8 +125,8 @@ void MainContentComponent::buttonClicked(Button* button) {
             this->pianoRollButton.setToggleState(true, NotificationType::dontSendNotification);
             this->midiPianoRoll.clear();
             this->midiKeyboardState.reset();
-            this->midiPianoRoll.setVisible(true);
-            this->midiMessageLog.setVisible(false);
+            this->addChildComponent(midiPianoRoll);
+            this->removeChildComponent(&midiMessageLog);
             this->repaint();
         }
     } else if (button == &this->clearButton) {
