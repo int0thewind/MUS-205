@@ -8,150 +8,155 @@
 #include "MidiPlaybackThread.h"
 
 struct MediaManager :
-  public MidiPlaybackThread::MidiPlaybackClient,
-  public ValueTree::Listener,
-  public Timer {
+public MidiPlaybackThread::MidiPlaybackClient, public ValueTree::Listener, public Timer
+{
+    MediaManager();
 
-  MediaManager();
-  
-  ~MediaManager();
+    ~MediaManager() override;
 
-  MediaManagerData& getManagerData() {return managerData;}
+    MediaManagerData& getManagerData() { return mediaManagerData; }
 
- private:
+private:
 
-  //============================================================================
-  // ValueTree::Listener overrides (only valueTreePropertyChanged() is used)
+    //============================================================================
+    // ValueTree::Listener overrides (only valueTreePropertyChanged() is used)
 
-  void valueTreePropertyChanged(ValueTree& tree, const Identifier& ident) final override;
+    void valueTreePropertyChanged(ValueTree& tree, const Identifier& ident) final ;
 
-  void valueTreeChildAdded(ValueTree& tree, ValueTree& child) final override {}
-  void valueTreeChildRemoved(ValueTree& tree, ValueTree& child, int index) final override {}
-  void valueTreeChildOrderChanged(ValueTree& tree, int oldc, int newc) final override {}
-  void valueTreeParentChanged(ValueTree& tree) final override {}
+    void valueTreeChildAdded(ValueTree& tree, ValueTree& child) final {}
+    void valueTreeChildRemoved(ValueTree& tree, ValueTree& child, int index) final {}
+    void valueTreeChildOrderChanged(ValueTree& tree, int oldc, int newc) final {}
+    void valueTreeParentChanged(ValueTree& tree) final {}
 
-  //============================================================================
-  // Timer overrides
+    //============================================================================
+    // Timer overrides
 
-  void timerCallback() override;
-  
-  //============================================================================
-  // Generic Media Support
+    void timerCallback() override;
 
-  void openMediaFile();
+    //============================================================================
+    // Generic Media Support
 
-  void openMediaInfoDialog();
+    void openMediaFile();
 
-  const String getMediaInfo();
+    void openMediaInfoDialog();
 
-  //==============================================================================
-  // Audio playback support
- 
-  void openAudioSettings();
+    String getMediaInfo();
 
-  const String getAudioInfo();
+    //==============================================================================
+    // Audio playback support
 
-  void playAudio();
+    __unused void openAudioSettings();
 
-  void pauseAudio();
+    String getAudioInfo();
 
-  void setAudioGain(double gain);
+    void playAudio();
 
-  void setAudioTempo(double tempo);
+    void pauseAudio();
 
-  void rewindAudio();
+    void setAudioGain(double gain);
 
-  void setAudioPlaybackPosition(double pos);
+    __unused void setAudioTempo(double tempo);
 
-  void scrollAudioPlaybackPosition();
+    void rewindAudio();
 
-  void loadAudioFile(File file) ;
+    void setAudioPlaybackPosition(double pos);
 
-  void loadIntoTransport(AudioFormatReader* reader) ;
+    /**
+     * This method controls the transport's position slider during playback.
+     * It is being called automatically and periodically by the timer callback.
+     * @see timerCallback()
+     */
+    void scrollAudioPlaybackPosition();
 
-  void clearAudioPlaybackState();
-  
-  //============================================================================
-  // MIDI playback support
-  
-  void playMidi();
+    void loadAudioFile(File file) ;
 
-  void pauseMidi();
+    void loadIntoTransport(AudioFormatReader* reader) ;
 
-  void setMidiGain(double gain);
+    void clearAudioPlaybackState();
 
-  void setMidiTempo(double tempo);
+    //============================================================================
+    // MIDI playback support
 
-  void setMidiPlaybackPosition(double positoin);
+    void playMidi();
 
-  void scrollMidiPlaybackPosition();
+    void pauseMidi();
 
-  void rewindMidi();
+    void setMidiGain(double gain);
 
-  const String getMidiInfo();
+    void setMidiTempo(double tempo);
 
-  bool isInternalSynthAvailable();
+    void setMidiPlaybackPosition(double position);
 
-  void openMidiOutput(int dev);
+    void scrollMidiPlaybackPosition();
 
-  void closeMidiOutput();
+    void rewindMidi();
 
-  void loadMidiFile(File file);
+    String getMidiInfo();
 
-  void loadIntoPlayer(MidiFile& midifile);
+    bool isInternalSynthesizerAvailable();
 
-  void clearMidiPlaybackState();
+    void openMidiOutput(int dev);
 
-  void playInternalSynth(const MidiMessage& message);
+    void closeMidiOutput();
 
-  void sendAllSoundsOff();
+    void loadMidiFile(File file);
 
-  void sendMessage(const MidiMessage& message);
+    void loadIntoPlayer(MidiFile& midiFile);
 
-  //==============================================================================
-  // MidiPlaybackClient overrides
+    void clearMidiPlaybackState();
 
-  void addMidiPlaybackMessages(MidiPlaybackThread::MidiMessageQueue &queue,
+    void playInternalSynthesizer(const MidiMessage& message);
+
+    void sendAllSoundsOff();
+
+    void sendMessage(const MidiMessage& message);
+
+    //==============================================================================
+    // MidiPlaybackClient overrides
+
+    void addMidiPlaybackMessages(MidiPlaybackThread::MidiMessageQueue &queue,
                                MidiPlaybackThread::PlaybackPosition &position) override;
 
-  void handleMessage(const MidiMessage& midiMessage) override;
-  
-   
-  //==============================================================================
-  // Audio member data
+    void handleMessage(const MidiMessage& midiMessage) override;
 
-  AudioDeviceManager audioDeviceManager;
 
-  AudioFormatManager formatManager;
+    //==============================================================================
+    // Audio member data
 
-  AudioSourcePlayer audioSourcePlayer;
+    AudioDeviceManager audioDeviceManager;
 
-  AudioTransportSource transportSource;
+    AudioFormatManager formatManager;
 
-  std::unique_ptr<juce::AudioFormatReaderSource> audioFileReaderSource;
+    AudioSourcePlayer audioSourcePlayer;
 
-  //==============================================================================
-  // MIDI member data.
+    AudioTransportSource transportSource;
 
-  std::unique_ptr<MidiOutput> midiOutputDevice;
+    std::unique_ptr<juce::AudioFormatReaderSource> audioFileReaderSource;
 
-  std::unique_ptr<MidiPlaybackThread> playbackThread;
+    //==============================================================================
+    // MIDI member data.
 
-  MediaManagerData managerData;
+    std::unique_ptr<MidiOutput> midiOutputDevice;
 
-  int midiFileNumTracks {0};
+    std::unique_ptr<MidiPlaybackThread> playbackThread;
 
-  int midiFileTimeFormat {0};
+    MediaManagerData mediaManagerData;
 
-  int midiFileLength {0};
+    int midiFileNumTracks {0};
 
-  double midiFileDuration {0.0};
+    int midiFileTimeFormat {0};
 
-  MidiMessageSequence sequence;
+    int midiFileLength {0};
 
-  CriticalSection sendLock;
-  
-  //==============================================================================
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MediaManager)
+    double midiFileDuration {0.0};
+
+    MidiMessageSequence midiMessageSequence;
+
+    CriticalSection sendLock;
+
+    const String MIDI_FILE_TYPE {"*.mid;*.midi;"};
+
+    //==============================================================================
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MediaManager)
 };
 

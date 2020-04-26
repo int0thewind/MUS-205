@@ -6,6 +6,7 @@
 
 #include "MidiPlaybackThread.h"
 #include "MediaManager.h"
+#include "MainApplication.h"
 
 /// A ComboBox that dynamically populates its menu with the available MIDI
 /// outputs. Invoked each time the user clicks on the menu.
@@ -20,9 +21,11 @@ struct MidiOutputMenu : public ComboBox {
         addItemList(devs, 1); // item id's are 1 based
         ComboBox::mouseDown(me);
         // if user didnt select a new port use the previous one
-        if (!getSelectedId())
+        if (!getSelectedId()) {
             selectItemWithText(sel);
+        }
     }
+
     String getSelectedItemText() {
         auto index = getSelectedItemIndex();
         return (index >= 0) ? getItemText(index) : "";
@@ -37,34 +40,34 @@ struct MidiOutputMenu : public ComboBox {
 struct MainComponent : public Component, public ComboBox::Listener,
 public Button::Listener, public ValueTree::Listener {
 
-  MainComponent();
-  ~MainComponent();
+    MainComponent();
+    ~MainComponent() override;
 
 private:
 
-  //============================================================================
-  // Component overrides.
+    //============================================================================
+    // Component overrides.
 
-  void paint (Graphics&) override;
-  void resized() override;
-  void comboBoxChanged(ComboBox* combo) override ;
-  void buttonClicked(Button* button ) override ;
+    void paint (Graphics&) override;
+    void resized() override;
+    void comboBoxChanged(ComboBox* combo) override ;
+    void buttonClicked(Button* button ) override ;
 
-  //============================================================================
-  // ValueTree::Listener overrides (only valueTreePropertyChanged() is used).
-  
-  void valueTreePropertyChanged(ValueTree& tree, const Identifier& ident) final ;
-  void valueTreeChildAdded(ValueTree& tree, ValueTree& child) final {}
-  void valueTreeChildRemoved(ValueTree& tree, ValueTree& child, int index) final {}
-  void valueTreeChildOrderChanged(ValueTree& parent, int oldIndex, int newIndex) final {}
-  void valueTreeParentChanged(ValueTree& tree) final {}
+    //============================================================================
+    // ValueTree::Listener overrides (only valueTreePropertyChanged() is used).
 
-  MediaManagerData mediaManagerData;
-  std::unique_ptr<Transport> transport;
-  TextButton openButton {"openButton"};
-  TextButton infoButton {"infoButton"};
-  MidiOutputMenu midiOutputMenu {};
-  
-  //============================================================================
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
+    void valueTreePropertyChanged(ValueTree& tree, const Identifier& ident) final ;
+    void valueTreeChildAdded(ValueTree& tree, ValueTree& child) final {}
+    void valueTreeChildRemoved(ValueTree& tree, ValueTree& child, int index) final {}
+    void valueTreeChildOrderChanged(ValueTree& parent, int oldIndex, int newIndex) final {}
+    void valueTreeParentChanged(ValueTree& tree) final {}
+
+    MediaManagerData mediaManagerData;
+    std::unique_ptr<Transport> transport;
+    TextButton openButton {"openButton"};
+    TextButton infoButton {"infoButton"};
+    MidiOutputMenu midiOutputMenu {};
+
+    //============================================================================
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -6,11 +6,11 @@
 
 MainWindow::MainWindow(const String& name)
 : DocumentWindow(name, Colours::white, DocumentWindow::allButtons) {
-    setUsingNativeTitleBar(true);
-    setResizable(false, false);
-    centreWithSize(392, 120);
-    mainComponent = std::make_unique<MainComponent>();
-    setContentOwned(mainComponent.get(), true);
+    this->setUsingNativeTitleBar(true);
+    this->setResizable(false, false);
+    this->centreWithSize(392, 120);
+    this->mainComponent = std::make_unique<MainComponent>();
+    this->setContentOwned(mainComponent.get(), true);
     this->setVisible(true);
 }
 

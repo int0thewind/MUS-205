@@ -13,8 +13,6 @@ MainApplication& MainApplication::getApp() {
     return *app;
 }
 
-void MainApplication::closeAllAlertAndDialogWindows() {}
-
 //==============================================================================
 // JUCEApplication overrides
 
@@ -24,9 +22,7 @@ const String MainApplication::getApplicationName() { return ProjectInfo::project
 
 const String MainApplication::getApplicationVersion() { return ProjectInfo::versionString; }
 
-bool MainApplication::moreThanOneInstanceAllowed() {
-    return false;
-}
+bool MainApplication::moreThanOneInstanceAllowed() { return false; }
 
 void MainApplication::initialise(const String& commandLine) {
     this->mediaManager = std::make_unique<MediaManager>();
@@ -35,10 +31,9 @@ void MainApplication::initialise(const String& commandLine) {
 
 void MainApplication::shutdown() { this->mainWindow = nullptr; }
 
-void MainApplication::systemRequestedQuit() { quit(); }
+void MainApplication::systemRequestedQuit() { MainApplication::quit(); }
 
-void MainApplication::anotherInstanceStarted(const String& commandLine) {
-}
+void MainApplication::anotherInstanceStarted(const String& commandLine) { }
 
 MediaManager* MainApplication::getMediaManager() { return this->mediaManager.get(); }
 

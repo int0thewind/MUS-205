@@ -50,7 +50,7 @@ public:
         automatically stops once the the position's beat exceeds this
         value.
     */
-    double endbeat;
+    double endBeat;
 
     /// The amount of beat the thread waits on each iteration.
     double tick;
@@ -79,7 +79,7 @@ public:
     /// Internal PlaybackPosition constructor.
     PlaybackPosition()
       : beat (0.0),
-        endbeat (0.0),
+        endBeat (0.0),
         tick (0.0),
         index (0),
         length (0),
@@ -89,19 +89,18 @@ public:
   
     /// Internal PlaybackPosition destructor.
     ~PlaybackPosition()
-    {
-    }
+    = default;
   
     /** Internal function returns true if stop is true, or the
         postion's beat is greater than its endbeat, or its index
         reaches its length and the length is greater than 0.
     */
-    bool isAtEnd()
+    bool isAtEnd() const
     {
       // arrgh! floating point error can make beat>endbeat test
       // not work. fix for now is too use a 1/2 tick fudge
       // factor to allow for some error in the comparison
-      return (stop || (beat > (endbeat + (tick/2))) || ((length > 0) && (index >= length)) );
+      return (stop || (beat > (endBeat + (tick / 2))) || ((length > 0) && (index >= length)) );
     }
     
     /// Resets the position back to its starting values.
@@ -125,10 +124,10 @@ public:
   public:
 
     /// Internal MidiMessageQueue constuctor.
-    MidiMessageQueue(){}
+    MidiMessageQueue()= default;
 
     /// Internal MidiMessageQueue destructor.
-    ~MidiMessageQueue(){}
+    ~MidiMessageQueue()= default;
 
     /** Adds a MidiMessage to the thread's playback queue. Once
         messages are added they are owned by the queue and will be
@@ -184,7 +183,7 @@ public:
     
     /** Provides midi data for the thread to play. Called on every
        tick (quantum of the beat) with a MidiMessageQueue and
-       PlaybackPosition so that the source can add midi messsages to
+       PlaybackPosition so that the source can add midi messages to
        the MidiMessageQueue at time stamps equal to or later than the
        current beat time in the PlaybackPosition. The position's beat
        time is managed by the thread and should never be set by the
@@ -196,7 +195,7 @@ public:
     virtual void addMidiPlaybackMessages(MidiMessageQueue& queue, PlaybackPosition& position) = 0;
     /// Called to handle message when its time is current.
     virtual void handleMessage(const juce::MidiMessage& midiMessage) = 0;
-    virtual ~MidiPlaybackClient(){}
+    virtual ~MidiPlaybackClient()= default;
   };
 
 private:
@@ -222,7 +221,7 @@ public:
       so that it can update its sliders and buttons as appropriate.
   */
   MidiPlaybackThread(MidiPlaybackClient* midiClient, int ticksPerBeat,
-                     double beatsPerMinute = 60.0, Transport* transport = 0)
+                     double beatsPerMinute = 60.0, Transport* transport = nullptr)
     : juce::Thread ("Midi Playback Thread"),
       client (midiClient),
       transport (transport),
@@ -234,7 +233,7 @@ public:
     position.tick= 1.0/ticksPerBeat;
   }
   
-  ~MidiPlaybackThread()
+  ~MidiPlaybackThread() override
   {
     messages.clear();
   }
@@ -254,7 +253,7 @@ public:
   void setPlaybackLimit(double endbeat, int length=0)
   {
     juce::ScopedLock lock (pblock);
-    position.endbeat = endbeat;
+    position.endBeat = endbeat;
     position.length = length;
   }
   
@@ -273,7 +272,7 @@ public:
   {
     juce::ScopedLock lock (pblock);
     position.beat = beat;
-    if (index>-1)
+    if (index > -1)
       position.index = index;
   }
 
@@ -438,7 +437,7 @@ private:
             // in the queue to process
             juce::ScopedLock lock (pblock);
             double now = position.beat;
-            pos = now / position.endbeat;
+            pos = now / position.endBeat;
             juce::MidiMessage* msg = 0; 
             while ((msg = messages.getFirst()))
             {
@@ -463,7 +462,7 @@ private:
           // and then process the messages for the current beat
           pblock.enter();
           double now = position.beat;
-          pos = now / position.endbeat;
+          pos = now / position.endBeat;
 
           // call sources's routine to get more messages pblock must
           // be unlocked because otherwise the message thread could

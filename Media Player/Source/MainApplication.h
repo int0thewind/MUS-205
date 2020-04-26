@@ -12,30 +12,29 @@ class MainWindow;
 class MainApplication : public JUCEApplication {
 public:
 
-  MainApplication();
+    MainApplication();
 
-  //============================================================================
-  // JUCEApplication overrides
+    //============================================================================
+    // JUCEApplication overrides
 
-  const String getApplicationName() override;
-  const String getApplicationVersion() override;
-  bool moreThanOneInstanceAllowed() override;
+    const String getApplicationName() override;
+    const String getApplicationVersion() override;
+    bool moreThanOneInstanceAllowed() override;
 
-  void initialise (const String& commandLine) override;
+    void initialise (const String& commandLine) override;
 
-  void shutdown() override;
+    void shutdown() override;
 
-  void systemRequestedQuit() override;
+    void systemRequestedQuit() override;
 
-  void anotherInstanceStarted (const String& commandLine) override;
+    void anotherInstanceStarted (const String& commandLine) override;
 
-  static MainApplication& getApp();
+    static MainApplication& getApp();
 
-  MediaManager* getMediaManager();
+    MediaManager* getMediaManager();
 
 private:
 
-  static void closeAllAlertAndDialogWindows();
-  std::unique_ptr<MediaManager> mediaManager;
-  std::unique_ptr<MainWindow> mainWindow;
+    std::unique_ptr<MediaManager> mediaManager;
+    std::unique_ptr<MainWindow> mainWindow;
 };
