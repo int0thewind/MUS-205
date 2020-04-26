@@ -35,14 +35,24 @@ void MidiPianoRoll::paint(Graphics& gr) {
 
 void MidiPianoRoll::update() {
     for (auto note = this->notes.begin(); note != this->notes.end(); note++) {
+        
         Rectangle<int> noteBound = (*note)->getBoundsInParent();
-        if ((*note)->haveNoteOff == true) { noteBound.setX(noteBound.getX() + PPF); }
-        else { noteBound.setWidth(noteBound.getWidth() + PPF); }
+        
+        if ((*note)->haveNoteOff == true) {
+            noteBound.setX(noteBound.getX() + PPF);
+        } else {
+            noteBound.setWidth(noteBound.getWidth() + PPF);
+        }
+        
         (*note)->setBounds(noteBound);
+        
         if (noteBound.getX() >= this->getWidth()) {
             this->removeChildComponent(note->get());
             note = this->notes.erase(note);
-            if (note == notes.end()) { break; }
+            
+            if (note == notes.end()) {
+                break;
+            }
         }
     }
 }
