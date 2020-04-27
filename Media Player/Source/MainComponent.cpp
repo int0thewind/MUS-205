@@ -78,8 +78,6 @@ void MainComponent::buttonClicked(Button* button) {
 
 void MainComponent::comboBoxChanged(ComboBox* menu) {
     if (menu == &midiOutputMenu) {
-        // We don't need to subtract one here
-        // We are sending the raw midi device id to the value tree.
         this->mediaManagerData.setMidiOutputOpenID(menu->getSelectedId());
     }
 }
@@ -102,11 +100,11 @@ void MainComponent::valueTreePropertyChanged(juce::ValueTree& tree, const juce::
             this->mediaManagerData.setTransportEnabled(true);
             this->mediaManagerData.setTransportTempoEnabled(false);
         } else if (mediaType == MediaManagerData::MEDIA_MIDI) {
-            bool isMidiOpened = (bool) this->mediaManagerData.getMidiOutputOpenID();
+            int isMidiOpened = this->mediaManagerData.getMidiOutputOpenID();
             this->infoButton.setEnabled(true);
             this->midiOutputMenu.setEnabled(true);
-            this->mediaManagerData.setTransportEnabled(isMidiOpened);
-            this->mediaManagerData.setTransportTempoEnabled(isMidiOpened);
+            this->mediaManagerData.setTransportEnabled((bool) isMidiOpened);
+            this->mediaManagerData.setTransportTempoEnabled((bool) isMidiOpened);
         } else if (mediaType == MediaManagerData::MEDIA_NONE) {
             this->infoButton.setEnabled(false);
             this->midiOutputMenu.setEnabled(false);

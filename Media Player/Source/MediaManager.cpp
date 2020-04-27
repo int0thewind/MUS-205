@@ -123,7 +123,7 @@ String MediaManager::getMediaInfo() {
 //==============================================================================
 // Audio playback support
 
-void MediaManager::openAudioSettings() {
+__unused void MediaManager::openAudioSettings() {
     // No operation here
 }
 
@@ -138,7 +138,6 @@ String MediaManager::getAudioInfo() {
     ss << "Audio format: "        << audioFile.getFileExtension().substring(1).toUpperCase() << "\n";
     ss << "Channels: "            << fileReader->numChannels << "\n";
     ss << "Sample rate: "         << fileReader->sampleRate << "\n";
-    // TODO sample frames in audio info?
     ss << "Sample frames: "       << fileReader->lengthInSamples << "\n";
     ss << "Bits per sample: "     << fileReader->bitsPerSample << "\n";
     ss << "Floating point data: " << (fileReader->usesFloatingPointData ? "True" : "False") << "\n";
@@ -200,17 +199,15 @@ void MediaManager::setMidiTempo(double tempo) {
 }
 
 void MediaManager::rewindMidi() {
-    // TODO need to revise rewindMidi()
     this->setMidiPlaybackPosition(0);
 }
 
 void MediaManager::setMidiPlaybackPosition(double position) {
-    // TODO need to revise setMidiPlaybackPosition
-    this->playbackThread->setPlaybackPosition(position);
+    double pos = position * this->midiFileDuration;
+    this->playbackThread->setPlaybackPosition(pos, midiMessageSequence.getNextIndexAtTime(pos));
 }
 
 void MediaManager::scrollMidiPlaybackPosition() {
-    // TODO how to get the current playing position.
     double sec = this->playbackThread->getPlaybackBeat();
     double dur = this->midiFileDuration;
     double pos = sec / dur;
@@ -241,7 +238,7 @@ void MediaManager::setAudioGain(double gain) {
     this->transportSource.setGain((float) this->mediaManagerData.getTransportGain());
 }
 
-void MediaManager::setAudioTempo(double tempo) {
+__unused void MediaManager::setAudioTempo(double tempo) {
     // ! Audio files does not have tempo settings, nothing to do!
 }
 
@@ -308,7 +305,6 @@ String MediaManager::getMidiInfo() {
     ss << "MIDI file format: level " << audioFile.getFileExtension() << "\n";
     ss << "Number of tracks: "       << this->midiFileNumTracks << "\n";
     ss << "Durations: "              << this->midiFileDuration << "\n";
-    // TODO what is the number of messages?
     ss << "Number of messages: "     << this->midiMessageSequence.getNumEvents() << "\n";
 
     return ss.str();
@@ -321,8 +317,6 @@ void MediaManager::clearMidiPlaybackState() {
     this->midiFileTimeFormat = 0;
     this->midiMessageSequence.clear();
     this->playbackThread->setPlaybackPosition(0, 0);
-    // My added code here: clear the midiOutputOpenID;
-    this->mediaManagerData.setMidiOutputOpenID(0);
 }
 
 void MediaManager::loadMidiFile(File midiFile) {
@@ -355,18 +349,13 @@ void MediaManager::loadIntoPlayer(MidiFile& midiFile) {
         this->midiMessageSequence.updateMatchedPairs();
     }
 
-    // TODO what is time format in a midi file?
     this->midiFileNumTracks  = midiFile.getNumTracks();
     this->midiFileTimeFormat = midiFile.getTimeFormat();
-    // TODO MIDI file duration vs length?
     this->midiFileDuration   = this->midiMessageSequence.getEndTime();
     this->midiFileLength     = this->midiMessageSequence.getNumEvents();
 
-    DBG("The midi file duration is " + String(midiFileDuration));
-    DBG("The midi file length is " + String(midiFileLength));
-
-    this->playbackThread->setPlaybackLimit(midiFileDuration, midiFileLength);
-    this->mediaManagerData.setPlaybackDuration(midiFileLength);
+    this->playbackThread->setPlaybackLimit(this->midiFileDuration, this->midiFileLength);
+    this->mediaManagerData.setPlaybackDuration(this->midiFileDuration);
 }
 
 ///==============================================================================
@@ -382,7 +371,7 @@ void MediaManager::sendMessage(const MidiMessage& message) {
 }
 
 void MediaManager::playInternalSynthesizer(const MidiMessage& message) {
-    // TODO Is this function NOP?
+    // No operation here!
 }
 
 void MediaManager::sendAllSoundsOff() {

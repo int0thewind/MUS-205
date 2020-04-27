@@ -206,7 +206,6 @@ void Transport::drawGainButton(double gain) {
     if (gain > 0.7)
         p.addCentredArc(85, 50, 5, 50,
                 0, 0, 3.14159f, true);
-    // TODO what is this mean?
     p.startNewSubPath(100, 0);
     drawable.setPath(p);
     drawable.setFill(this->iconColor);

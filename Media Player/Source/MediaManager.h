@@ -1,3 +1,4 @@
+#include <cstddef>
 //==============================================================================
 /// @file MediaManager.h
 /// A class providing support for audio/midi playback.
