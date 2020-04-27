@@ -21,6 +21,8 @@ public:
     const String getApplicationVersion() override;
     bool moreThanOneInstanceAllowed() override;
 
+    static void closeAllWindows();
+
     void initialise (const String& commandLine) override;
 
     void shutdown() override;

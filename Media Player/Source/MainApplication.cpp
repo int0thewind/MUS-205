@@ -31,11 +31,27 @@ void MainApplication::initialise(const String& commandLine) {
 
 void MainApplication::shutdown() { this->mainWindow = nullptr; }
 
-void MainApplication::systemRequestedQuit() { MainApplication::quit(); }
+void MainApplication::systemRequestedQuit() {
+    MainApplication::closeAllWindows();
+    MainApplication::quit();
+}
 
 void MainApplication::anotherInstanceStarted(const String& commandLine) { }
 
 MediaManager* MainApplication::getMediaManager() { return this->mediaManager.get(); }
+
+void MainApplication::closeAllWindows() {
+    std::vector<std::unique_ptr<AlertWindow>> alertWindows;
+    std::vector<std::unique_ptr<DialogWindow>> dialogWindows;
+    Desktop& desktop = Desktop::getInstance();
+    for (int i = 0; i < desktop.getNumComponents(); i++) {
+        if (auto alertWindow = dynamic_cast<AlertWindow*> (desktop.getComponent(i))) {
+            alertWindows.push_back(std::unique_ptr<AlertWindow>(alertWindow));
+        } else if (auto dialogWindow = dynamic_cast<DialogWindow*>(desktop.getComponent(i))) {
+            dialogWindows.push_back(std::unique_ptr<DialogWindow>(dialogWindow));
+        }
+    }
+}
 
 //==============================================================================
 // This macro generates the main() routine that launches the app.
