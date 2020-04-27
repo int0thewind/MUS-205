@@ -94,7 +94,6 @@ struct MediaManagerData : public ValueTreeWrapper {
 
     bool isInternalSynthesizerAvailable();
 
-    // TODO never used this function. Where should this be used?
     void setInternalSynthesizerAvailable(bool isAvailable);
 
     void launchOpenMediaDialog();
